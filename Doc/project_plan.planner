@@ -1,0 +1,161 @@
+<?xml version="1.0"?>
+<project name="" company="" manager="" phase="" project-start="20200607T000000Z" mrproject-version="2" calendar="1">
+  <properties/>
+  <phases/>
+  <calendars>
+    <day-types>
+      <day-type id="0" name="Working" description="A default working day"/>
+      <day-type id="1" name="Nonworking" description="A default non working day"/>
+      <day-type id="2" name="Use base" description="Use day from base calendar"/>
+    </day-types>
+    <calendar id="1" name="Default">
+      <default-week mon="0" tue="0" wed="0" thu="0" fri="0" sat="1" sun="1"/>
+      <overridden-day-types>
+        <overridden-day-type id="0">
+          <interval start="0800" end="1200"/>
+          <interval start="1300" end="1700"/>
+        </overridden-day-type>
+      </overridden-day-types>
+      <days>
+        <day date="20200712" type="day-type" id="0"/>
+        <day date="20200621" type="day-type" id="0"/>
+        <day date="20200711" type="day-type" id="0"/>
+        <day date="20200620" type="day-type" id="0"/>
+        <day date="20200719" type="day-type" id="0"/>
+        <day date="20200628" type="day-type" id="0"/>
+        <day date="20200607" type="day-type" id="0"/>
+        <day date="20200718" type="day-type" id="0"/>
+        <day date="20200627" type="day-type" id="0"/>
+        <day date="20200606" type="day-type" id="0"/>
+        <day date="20200726" type="day-type" id="0"/>
+        <day date="20200705" type="day-type" id="0"/>
+        <day date="20200614" type="day-type" id="0"/>
+        <day date="20200725" type="day-type" id="0"/>
+        <day date="20200704" type="day-type" id="0"/>
+        <day date="20200613" type="day-type" id="0"/>
+      </days>
+    </calendar>
+  </calendars>
+  <tasks>
+    <task id="1" name="Proyecto CNC" note="" work="432000" start="20200607T000000Z" end="20200724T170000Z" work-start="20200607T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+      <task id="2" name="Investigaci&#xF3;n inicial" note="asd" work="28800" start="20200607T000000Z" end="20200614T170000Z" work-start="20200607T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+        <task id="3" name="Investigaci&#xF3;n sobre c&#xF3;digo G" note="" work="10800" duration="201600" start="20200607T000000Z" end="20200613T170000Z" work-start="20200607T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <constraint type="must-start-on" time="20200607T000000Z"/>
+        </task>
+        <task id="4" name="Determinaci&#xF3;n de las instrucciones que se utilizar&#xE1;n" note="" work="10800" duration="28800" start="20200613T170000Z" end="20200614T170000Z" work-start="20200614T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="3" type="FS"/>
+          </predecessors>
+        </task>
+        <task id="5" name="Investigaci&#xF3;n sobre el funcionamiento b&#xE1;sico de la m&#xE1;quina" note="" work="7200" duration="201600" start="20200607T000000Z" end="20200613T170000Z" work-start="20200607T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <constraint type="must-start-on" time="20200607T000000Z"/>
+        </task>
+      </task>
+      <task id="6" name="Dise&#xF1;o de hardware" note="" work="50400" start="20200614T170000Z" end="20200625T170000Z" work-start="20200615T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+        <task id="7" name="Determinaci&#xF3;n de las dimensiones" note="" work="3600" duration="57600" start="20200614T170000Z" end="20200616T170000Z" work-start="20200615T080000Z" percent-complete="13" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="5" type="FS" lag="86400"/>
+          </predecessors>
+        </task>
+        <task id="8" name="Dise&#xF1;o de la estructura" note="" work="28800" duration="144000" start="20200617T170000Z" end="20200622T170000Z" work-start="20200618T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="7" type="FS" lag="86400"/>
+          </predecessors>
+        </task>
+        <task id="9" name="Determinaci&#xF3;n de las partes mec&#xE1;nicas" note="" work="7200" duration="57600" start="20200623T170000Z" end="20200625T170000Z" work-start="20200624T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="8" type="FS" lag="86400"/>
+          </predecessors>
+        </task>
+        <task id="10" name="Selecci&#xF3;n de motores y drivers para estos " note="" work="3600" duration="28800" start="20200617T170000Z" end="20200618T170000Z" work-start="20200618T080000Z" percent-complete="10" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="7" type="FS" lag="86400"/>
+          </predecessors>
+        </task>
+        <task id="11" name="Dise&#xF1;o de PCB para conexi&#xF3;n de los driver de motores con la EDU-CIAA" note="mi&#xE9; 03 jun 2020, 08:37&#10;" work="7200" duration="57600" start="20200619T170000Z" end="20200621T170000Z" work-start="20200620T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="10" type="FS" lag="86400"/>
+          </predecessors>
+        </task>
+      </task>
+      <task id="12" name="Dise&#xF1;o de software" note="" work="154800" start="20200626T170000Z" end="20200713T170000Z" work-start="20200627T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+        <task id="13" name="Dise&#xF1;o del control de los motores paso a paso " note="" work="28800" duration="201600" start="20200626T170000Z" end="20200703T170000Z" work-start="20200627T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="6" type="FS" lag="86400"/>
+          </predecessors>
+        </task>
+        <task id="14" name="Dise&#xF1;o de la lectura y parseo de las instrucciones en c&#xF3;digo G" note="" work="18000" duration="86400" start="20200703T170000Z" end="20200706T170000Z" work-start="20200704T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="13" type="FS"/>
+          </predecessors>
+        </task>
+        <task id="15" name="Dise&#xF1;o de la funci&#xF3;n de interpolaci&#xF3;n entre puntos" note="" work="36000" duration="86400" start="20200703T170000Z" end="20200706T170000Z" work-start="20200704T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="13" type="FS"/>
+          </predecessors>
+        </task>
+        <task id="16" name="Dise&#xF1;o de la aplicaci&#xF3;n web" note="" work="72000" duration="201600" start="20200706T170000Z" end="20200713T170000Z" work-start="20200707T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="15" type="FS"/>
+          </predecessors>
+        </task>
+      </task>
+      <task id="17" name="Armado" note="" work="72000" start="20200713T170000Z" end="20200719T170000Z" work-start="20200714T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+        <task id="18" name="Armado de la estructura" note="" work="54000" duration="86400" start="20200713T170000Z" end="20200716T170000Z" work-start="20200714T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="12" type="FS"/>
+          </predecessors>
+        </task>
+        <task id="19" name="Armado del PCB con los drivers" note="" work="18000" duration="86400" start="20200716T170000Z" end="20200719T170000Z" work-start="20200717T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="18" type="FS"/>
+          </predecessors>
+        </task>
+      </task>
+      <task id="20" name="Integraci&#xF3;n" note="" work="36000" start="20200719T170000Z" end="20200721T170000Z" work-start="20200720T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+        <task id="21" name="Integraci&#xF3;n del software" note="" work="36000" duration="57600" start="20200719T170000Z" end="20200721T170000Z" work-start="20200720T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="17" type="FS"/>
+          </predecessors>
+        </task>
+      </task>
+      <task id="22" name="Testeo" note="" work="54000" start="20200719T170000Z" end="20200722T170000Z" work-start="20200720T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+        <task id="23" name="Testeo de la estructura" note="" work="18000" duration="86400" start="20200719T170000Z" end="20200722T170000Z" work-start="20200720T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="17" type="FS"/>
+          </predecessors>
+        </task>
+        <task id="24" name="Testeo del software de control" note="" work="18000" duration="86400" start="20200719T170000Z" end="20200722T170000Z" work-start="20200720T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="17" type="FS"/>
+          </predecessors>
+        </task>
+        <task id="25" name="Testeo de la aplicaci&#xF3;n web" note="" work="18000" duration="86400" start="20200719T170000Z" end="20200722T170000Z" work-start="20200720T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="17" type="FS"/>
+          </predecessors>
+        </task>
+      </task>
+      <task id="26" name="Documentaci&#xF3;n" note="" work="36000" start="20200614T170000Z" end="20200724T170000Z" work-start="20200615T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-work">
+        <constraint type="start-no-earlier-than" time="20200729T000000Z"/>
+        <task id="27" name="Informe Final" note="" work="36000" duration="1152000" start="20200614T170000Z" end="20200724T170000Z" work-start="20200615T080000Z" percent-complete="0" priority="0" type="normal" scheduling="fixed-duration">
+          <predecessors>
+            <predecessor id="1" predecessor-id="2" type="FS"/>
+          </predecessors>
+        </task>
+      </task>
+    </task>
+  </tasks>
+  <resource-groups/>
+  <resources>
+    <resource id="1" name="Matias Sambrizzi" short-name="Mati" type="1" units="0" email="msambrizzi@fi.uba.ar" note="" std-rate="0"/>
+  </resources>
+  <allocations>
+    <allocation task-id="11" resource-id="1" units="13"/>
+    <allocation task-id="10" resource-id="1" units="13"/>
+    <allocation task-id="5" resource-id="1" units="4"/>
+    <allocation task-id="6" resource-id="1" units="100"/>
+    <allocation task-id="3" resource-id="1" units="5"/>
+    <allocation task-id="4" resource-id="1" units="38"/>
+  </allocations>
+</project>

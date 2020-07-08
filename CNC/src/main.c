@@ -4,25 +4,15 @@
  * al pin T_FIL1 de la EDUCIAA, que se corresponde con el PWM0
  * se utilizó el GPIO1 para configurar la dirección del stepper
 */
-#include "sapi.h"
-#include "sapi_delay.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "sapi.h"
+#include "config.h"
+#include "motors.h"
+#include "movment.h"
+#include "sapi_delay.h"
 
-#define STEPS_PER_REV		200
-#define STEPS_PER_MM		200 // Tardo 200 pasos en hacer 1mm
-#define FREQ			1000
-#define XAXIS			PWM0
-#define MOTOR_DIR		GPIO1
 
-typedef struct {
-	float px;
-	float py;
-	float pz;
-} axis_t;
-
-//Gloabal Actual Position
-static axis_t actual_pos = {.px=0,.py=0,.pz=0};
 //Global Future Movment, buffer?
 static axis_t future_pos = {.px=0,.py=0,.pz=0};
 //configs?
@@ -34,32 +24,33 @@ volatile char rxLine[15];
 volatile uint8_t count = 0;
 volatile bool_t receivedLine = false;
 
-void motorMoveSteps(uint32_t nsteps, uint8_t axis, bool_t dir);
 void process_line(char *rxLine);
 int read_number(char *rxLine, size_t *counter, float *number);
 bool_t isLetter(const uint8_t c);
 bool_t isNumber(const uint8_t c);
-void line_move(float newx, float newy, float newz);
-float my_max(float x, float y, float z);
 void onRx(void *);
 
 int main(void)
 {
-	// Set DIR pin as OUTPUT
-	gpioInit(GPIO1, GPIO_OUTPUT);
-	gpioInit(GPIO3, GPIO_OUTPUT);
 	boardInit();
+	//init Motors
+	gpioInit(MOTOR_X_DIR, GPIO_OUTPUT);
+	gpioInit(MOTOR_X_STEP, GPIO_OUTPUT);
+	gpioInit(MOTOR_Y_DIR, GPIO_OUTPUT);
+	gpioInit(MOTOR_Y_STEP, GPIO_OUTPUT);
+	gpioInit(MOTOR_Z_DIR, GPIO_OUTPUT);
+	gpioInit(MOTOR_Z_STEP, GPIO_OUTPUT);
+
+	motor_config(MOTOR_X_STEP, MOTOR_X_DIR,
+		     MOTOR_Y_STEP, MOTOR_Y_DIR,
+		     MOTOR_Z_STEP, MOTOR_Z_DIR);
+
 	//UART config
-	uartConfig(UART_USB, 115200);
-	uartCallbackSet(UART_USB, UART_RECEIVE, onRx, NULL);
-	uartInterrupt(UART_USB, true);
+	//uartConfig(UART_USB, 115200);
+	//uartCallbackSet(UART_USB, UART_RECEIVE, onRx, NULL);
+	//uartInterrupt(UART_USB, true);
 
 	while(1) {
-		/*
-		delay(1000);
-		motorMoveSteps(200, XAXIS, 0);
-		delay(1000);
-		*/
 		if(receivedLine) {
 			receivedLine = false;
 			uartWriteString(UART_USB, (char *)rxLine);
@@ -71,14 +62,6 @@ int main(void)
 	}
 
 	return 0;
-}
-
-
-void motorMoveSteps(uint32_t nsteps, const uint8_t axis, const bool_t dir)
-{
-	gpioWrite(MOTOR_DIR, dir);
-	gpioWrite(GPIO3, 1);
-	gpioWrite(GPIO3, 0);
 }
 
 
@@ -239,70 +222,6 @@ bool_t isLetter(const uint8_t c) {
 bool_t isNumber(const uint8_t c) {
 	return (c>= '0' && c<= '9');
 }
-
-
-
-/*
- * @brief funcion calcular los puntos intermedios entre una variable global que
- * guarda registro de la posición actual y los nuevos parámetros que se le pasen
- * @param newx nuevo valor que quiero en x
- * @param newy nuevo valor que quiero en y
- * @param newz nuevo valor que quiero en z
- * TODO: Esto está implementado solo para 1 eje
- */
-void line_move(float newx, float newy, float newz)
-{
-	int32_t delta_x, delta_y, delta_z;
-	uint32_t max_steps = 0;
-	//Calculo los delta de movimiento
-	delta_x = (newx - actual_pos.px) * STEPS_PER_MM; //steps
-	delta_y = (newy - actual_pos.py) * STEPS_PER_MM; //steps
-	delta_z = (newz - actual_pos.pz) * STEPS_PER_MM; //steps
-
-	uint8_t dir_x = (delta_x < 0) ? 0:1;
-	uint8_t dir_y = (delta_y < 0) ? 0:1;
-	uint8_t dir_z = (delta_z < 0) ? 0:1;
-
-	//Me olvido del signo, esta guardado en dir_xx
-	delta_x = (delta_x < 0) ? -delta_x : delta_x;
-	delta_y = (delta_y < 0) ? -delta_y : delta_y;
-	delta_z = (delta_z < 0) ? -delta_z : delta_z;
-
-	//Calculo las iteraciones
-	max_steps = my_max(delta_x, delta_y, delta_z);
-
-	uint32_t over = 0;
-
-	// Hago las iteraciones
-	for(uint32_t i=0;i<max_steps; i++) {
-		over += delta_x;
-		if(over >= max_steps) {
-			over -= max_steps;
-			// Muevo el motor 1 paso
-			motorMoveSteps((uint32_t) 1, XAXIS, dir_x);
-		}
-		//VER COMO CONFIGURAR ESTO
-		//Si bajo este delay voy más rápido
-		//pero tengo que darle mas corriente al motor
-		delayInaccurateUs(500);
-	}
-
-	actual_pos.px = newx;
-	actual_pos.py = newy;
-	actual_pos.pz = newz;
-}
-
-float my_max(float x, float y, float z)
-{
-	return (x > y) ? ((x > z) ? x : z) : ((y > z) ? y : z);
-}
-
-
-
-
-
-
-
 
 
 

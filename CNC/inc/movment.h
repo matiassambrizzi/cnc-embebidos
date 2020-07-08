@@ -21,5 +21,9 @@ typedef struct {
  */
 void line_move(float newx, float newy, float newz);
 
+/*
+ * @brief Setear esta posición como el origen de coordenadas
+*/
+void set_origin();
 
 #endif

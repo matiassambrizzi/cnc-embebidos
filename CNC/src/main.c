@@ -46,9 +46,9 @@ int main(void)
 		     MOTOR_Z_STEP, MOTOR_Z_DIR);
 
 	//UART config
-	//uartConfig(UART_USB, 115200);
-	//uartCallbackSet(UART_USB, UART_RECEIVE, onRx, NULL);
-	//uartInterrupt(UART_USB, true);
+	uartConfig(UART_USB, 115200);
+	uartCallbackSet(UART_USB, UART_RECEIVE, onRx, NULL);
+	uartInterrupt(UART_USB, true);
 
 	while(1) {
 		if(receivedLine) {
@@ -57,7 +57,7 @@ int main(void)
 			uartWriteByte(UART_USB, '\n');
 			//aca tengo que procesar la linea
 			process_line((char*) rxLine);
-			line_move(future_pos.px, 1, 1);
+			line_move(future_pos.px, future_pos.py, future_pos.pz);
 		}
 	}
 
@@ -125,6 +125,10 @@ void process_line(char *rxLine)
 			case 2:
 				//TODO: Arc Move
 				break;
+			case 10:
+				// Set this pos as origin ?
+				set_origin();
+				break;
 			case 21:
 				//TODO mm metric
 				break;
@@ -157,7 +161,7 @@ void process_line(char *rxLine)
 		case 'Y':
 			uartWriteString(UART_USB, "Setting Y\r\n");
 			printf("%d\n", (int) number);
-			future_pos.pz = number;
+			future_pos.py = number;
 			break;
 		case 'Z':
 			uartWriteString(UART_USB, "Setting Z\r\n");

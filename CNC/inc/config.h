@@ -42,6 +42,16 @@
 #define MOTOR_Z_DIR		GPIO5
 #define MOTOR_Z_STEP		GPIO7
 
+/*
+ * Motor gira a la derecha o izquierda. Con esto se pueden cambiar
+ * los sentidos de giro de los motores. Asumiendo que se conectaron
+ * todos de la misma forma
+ * TODO: Ver de hacer una configuración distinta para cada motor
+*/
+#define LEFT			0
+#define RIGHT			~LEFT
 
+
+#define UPGRADE_LINE
 
 #endif

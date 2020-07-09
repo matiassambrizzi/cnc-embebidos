@@ -5,11 +5,38 @@
 #include "config.h"
 #include "motors.h"
 
+typedef uint32_t speed_t;
+
+typedef enum {
+	LINEAR,
+	FAST,
+	CIRCULAR,
+	IDLE
+} movment_type_t;
+
+typedef enum {
+	RELATIVE,
+	ABSOLUTE
+} coordinates_type_t
+
 typedef struct {
 	float px;
 	float py;
 	float pz;
 } axis_t;
+
+typedef struct {
+	int32_t px;
+	int32_t py;
+	int32_t pz;
+} steps_t;
+
+typedef struct {
+	movment_type_t type;
+	coordinates_type_t coordinates;
+	steps_t next_pos;
+	speed_t speed;
+} movment_t;
 
 /*
  * @brief funcion calcular los puntos intermedios entre una variable global que

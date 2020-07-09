@@ -10,11 +10,9 @@
 #include "config.h"
 #include "motors.h"
 #include "movment.h"
-#include "sapi_delay.h"
-
 
 //Global Future Movment, buffer?
-static axis_t future_pos = {.px=0,.py=0,.pz=0};
+axis_t future_pos = {.px=0,.py=0,.pz=0};
 //configs?
 // - Type of movment
 // - Speed
@@ -50,14 +48,17 @@ int main(void)
 	uartCallbackSet(UART_USB, UART_RECEIVE, onRx, NULL);
 	uartInterrupt(UART_USB, true);
 
+	uartWriteString(UART_USB, "ok\r\n");
+
 	while(1) {
 		if(receivedLine) {
 			receivedLine = false;
-			uartWriteString(UART_USB, (char *)rxLine);
-			uartWriteByte(UART_USB, '\n');
+			//uartWriteString(UART_USB, (char *)rxLine);
+			//uartWriteByte(UART_USB, '\n');
 			//aca tengo que procesar la linea
 			process_line((char*) rxLine);
 			line_move(future_pos.px, future_pos.py, future_pos.pz);
+			uartWriteString(UART_USB, "ok\r\n");
 		}
 	}
 
@@ -90,7 +91,9 @@ void onRx(void *noUso)
 
 /*
  * @brief proceso una linea de codigo G, asumo que no tiene espacios
- * TODO: TEST THIS
+ * TODO:
+ *	- Ver de guardar las coordenadas en pasos
+ *	- Pensar como seria el manejo de cordenadas relativas
  */
 void process_line(char *rxLine)
 {
@@ -126,7 +129,8 @@ void process_line(char *rxLine)
 				//TODO: Arc Move
 				break;
 			case 10:
-				// Set this pos as origin ?
+				//Setear posicion actual como origen de
+				//coordenadas
 				set_origin();
 				break;
 			case 21:
@@ -219,12 +223,14 @@ int read_number(char *rxLine, size_t *counter, float *number)
 }
 
 //Make this static
-bool_t isLetter(const uint8_t c) {
+bool_t isLetter(const uint8_t c)
+{
 	return (c >= 'A' && c <= 'Z');
 }
 
-bool_t isNumber(const uint8_t c) {
-	return (c>= '0' && c<= '9');
+bool_t isNumber(const uint8_t c)
+{
+	return (c >= '0' && c <= '9');
 }
 
 

@@ -2,7 +2,9 @@
 
 //Gloabal Actual Position
 // VER DONDE PONER ESTA VARIABLE
-static axis_t actual_pos = {.px=0,.py=0,.pz=0};
+
+extern axis_t future_pos;
+static steps_t actual_pos = {.px=0,.py=0,.pz=0};
 
 
 static float max(float x, float y, float z)
@@ -151,5 +153,8 @@ void set_origin(void)
 	actual_pos.px = 0;
 	actual_pos.py = 0;
 	actual_pos.pz = 0;
+	future_pos.px = 0;
+	future_pos.py = 0;
+	future_pos.pz = 0;
 }
 

@@ -55,10 +55,12 @@ typedef enum {
 	ARC //TODO.
 } movment_type_t;
 
+typedef TickType_t speed_t;
+
 typedef struct {
 	position_t future;
 	movment_type_t type;
-
+	speed_t speed;
 } g_block_t;
 
 g_block_t block;
@@ -78,6 +80,18 @@ static uint8_t my_direc(int32_t d)
 	return (d < 0) ? LEFT:RIGHT;
 }
 
+static TickType_t speed_to_ticks(float s)
+{
+	if(s < 1) {
+		s = 1;
+	}
+	if(s > 100) {
+		s = 100;
+	}
+
+	return pdMS_TO_TICKS(101 - s);
+}
+
 int main(void)
 {
 	boardInit();
@@ -93,6 +107,7 @@ int main(void)
 	block.future.px = 0;
 	block.future.py = 0;
 	block.future.pz = 0;
+	block.speed = speed_to_ticks(100);
 
 	motor_config(MOTOR_X_STEP, MOTOR_X_DIR,
 		     MOTOR_Y_STEP, MOTOR_Y_DIR,
@@ -116,14 +131,14 @@ int main(void)
 		    (const char*)"MytaskPrint",
 		    configMINIMAL_STACK_SIZE*2,
 		    NULL,
-		    tskIDLE_PRIORITY+1,
+		    tskIDLE_PRIORITY+2,
 		    &xHandlePrint);
 
 	xTaskCreate(moveMotors,
 		    (const char*)"moveMotors",
 		    configMINIMAL_STACK_SIZE*4,
 		    NULL,
-		    tskIDLE_PRIORITY+2,
+		    tskIDLE_PRIORITY+3,
 		    NULL);
 
 	vTaskStartScheduler();
@@ -142,6 +157,7 @@ void moveMotors(void *param)
 
 	while(1) {
 		xQueueReceive(xPointsQueue, &move, portMAX_DELAY);
+
 		switch (block.type) {
 			case LINE:
 				line_move(move.px, move.py, move.pz);
@@ -335,6 +351,7 @@ void process_line(char *rxLine)
 			movment = true;
 			break;
 		case 'F':
+			block.speed = speed_to_ticks(number);
 			//Updated Speed
 			break;
 
@@ -346,8 +363,12 @@ void process_line(char *rxLine)
 	}
 
 	// Las colas almacenan copias
-	if(movment)
+	if(movment) {
 		xQueueSend(xPointsQueue, &future_pos, portMAX_DELAY);
+		// ACA TENGO QUE MANDAR UN CARACTER PARA AVISAR SI
+		// QUEDA ESPACIO PARA EL PROXIMO CARACTER O NO
+		// VER
+	}
 	// aca podria subir a una cola una estructura y la leo en el movimiento
 	// de los motores
 	//grbl ejecutal el comando dentro de esta función
@@ -461,7 +482,7 @@ void line_move(float newx, float newy, float newz)
 			decision1 += 2 * delta_y;
 			decision2 += 2 * delta_z;
 			// Delay de velocidad
-			vTaskDelay(pdMS_TO_TICKS(10));
+			vTaskDelay(block.speed);
 			//delay(10);
 		}
 	//Then Y is driving
@@ -490,7 +511,7 @@ void line_move(float newx, float newy, float newz)
 			decision2 += 2 * delta_z;
 			// Delay de velocidad
 			//delay(10);
-			vTaskDelay(pdMS_TO_TICKS(10));
+			vTaskDelay(block.speed);
 		}
 	// Then Z is driving
 	} else {
@@ -518,7 +539,7 @@ void line_move(float newx, float newy, float newz)
 			decision2 += 2 * delta_x;
 			// Delay de velocidad
 			//delay(10);
-			vTaskDelay(pdMS_TO_TICKS(10));
+			vTaskDelay(block.speed);
 		}
 	}
 }
@@ -551,17 +572,17 @@ void fast_move(float newx, float newy, float newz)
 	while(actual_pos.px != new_stepx) {
 		actual_pos.px += xs;
 		motor_x_move(dir_x);
-		vTaskDelay(pdMS_TO_TICKS(10));
+		vTaskDelay(block.speed);
 	}
 	while(actual_pos.py != new_stepy) {
 		actual_pos.py += ys;
 		motor_y_move(dir_y);
-		vTaskDelay(pdMS_TO_TICKS(10));
+		vTaskDelay(block.speed);
 	}
 	while(actual_pos.pz != new_stepz) {
 		actual_pos.pz += zs;
 		motor_z_move(dir_z);
-		vTaskDelay(pdMS_TO_TICKS(10));
+		vTaskDelay(block.speed);
 	}
 
 }

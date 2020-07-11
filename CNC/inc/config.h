@@ -58,6 +58,10 @@
 #define UART_PORT		UART_USB
 
 
+#define END_STOP_X		GPIO8
+#define END_STOP_Y		GPIO8
+#define END_STOP_Z		GPIO8
+
 /*
  * Home direction X
 */

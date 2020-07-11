@@ -25,9 +25,9 @@ typedef struct {
 } position_t;
 
 typedef struct {
-	uint32_t px;
-	uint32_t py;
-	uint32_t pz;
+	int32_t px;
+	int32_t py;
+	int32_t pz;
 } steps_t;
 
 void onRx(void *);
@@ -179,6 +179,8 @@ void moveMotors(void *param)
 				block.future.pz = 0;
 				block.future.py = 0;
 				block.type = FAST_MOVMENT;
+				xQueueReset(xPointsQueue);
+				//RESETEAR LA COLA DE COMANDOS!
 				// Aca tengo que ejecutar la función de home
 				// y resetear la pos actual y la futura.
 				// y resetear el modo de movimiento para evitar
@@ -311,9 +313,9 @@ void process_line(char *rxLine)
 				block.type = ARC;
 				break;
 			case 10:
-				printf("%u,", actual_pos.px);
-				printf("%u,", actual_pos.py);
-				printf("%u\n", actual_pos.pz);
+				printf("%d,", actual_pos.px);
+				printf("%d,", actual_pos.py);
+				printf("%d\n", actual_pos.pz);
 				// Set this pos as origin ?
 				//set_origin();
 				break;
@@ -379,7 +381,7 @@ void process_line(char *rxLine)
 
 	// Las colas almacenan copias
 	if(movment) {
-		xQueueSend(xPointsQueue, &future_pos, portMAX_DELAY);
+		xQueueSend(xPointsQueue, &(block.future), portMAX_DELAY);
 		// ACA TENGO QUE MANDAR UN CARACTER PARA AVISAR SI
 		// QUEDA ESPACIO PARA EL PROXIMO CARACTER O NO
 		// VER
@@ -401,10 +403,12 @@ int read_number(char *rxLine, size_t *counter, float *number)
 	// TODO: Si iterator+i no es un número atof() devuelve 0
 	// No es seguro.. Hay que fijarse si es un numero de otra forma devolver
 	// error
+	/*
 	if(*(iterator+i) < '0' || *(iterator+i) > '9') {
 		//Error nan;
 		return -1;
 	}
+	*/
 	//atof is secure ?
 	if(*(iterator+i) != '0')
 		*number = atof(iterator+i);

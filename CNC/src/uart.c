@@ -3,7 +3,16 @@
 TaskHandle_t xHandleProcessLine = NULL;
 TaskHandle_t xHandleUART = NULL;
 // Variable global que almacena las lineas
-char rx_line[15];
+char rx_line[MAX_RX_BUFFER];
+
+
+void uart_config()
+{
+	uartConfig(UART_PORT, COM_BAUDRATE);
+	uartCallbackSet(UART_PORT, UART_RECEIVE, onRx, NULL);
+	uartInterrupt(UART_PORT, true);
+}
+
 
 void uartProcessRxEventTask(void * taskParamPrt)
 {
@@ -26,7 +35,7 @@ void uartProcessRxEventTask(void * taskParamPrt)
 				//Si estoy aca es por que quedan datos
 				//en el fifo del uart
 				if((rx_char = uartRxRead(UART_PORT)) != ' ') {
-					if((rx_line[i] = rx_char) == '\n' || i > 15){
+					if((rx_line[i] = rx_char) == '\n' || i > MAX_RX_BUFFER){
 						rx_line[i] = '\0';
 						i = 0;
 						// Aviso que se leyó una linea

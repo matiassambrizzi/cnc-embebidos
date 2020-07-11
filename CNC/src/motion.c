@@ -37,6 +37,7 @@ void moveMotorsTask(void *param)
 				home_all();
 				gcode_block_reset();
 				xQueueReset(xPointsQueue);
+				ready_to_process();
 				break;
 			default:
 				;
@@ -195,54 +196,61 @@ void fast_move(float newx, float newy, float newz)
 	int8_t ys = (delta_y == 0) ? 0 : ((delta_y > 0) ? 1 : -1);
 	int8_t zs = (delta_z == 0) ? 0 : ((delta_z > 0) ? 1 : -1);
 
+	bool_t xStop = false;
+	bool_t yStop = false;
+	bool_t zStop = false;
 
-	while(position_get_x() != new_stepx) {
-		position_x_increment(xs);
-		motor_x_move(dir_x);
-		vTaskDelay(gcode_block_get_speed());
-	}
-	while(position_get_y() != new_stepy) {
-		position_y_increment(ys);
-		motor_y_move(dir_y);
-		vTaskDelay(gcode_block_get_speed());
-	}
-	while(position_get_z() != new_stepz) {
-		position_z_increment(zs);
-		motor_z_move(dir_z);
-		vTaskDelay(gcode_block_get_speed());
-	}
+	speed_t delay = gcode_block_get_speed();
 
+	while(!xStop || !yStop || !zStop) {
+
+		if(position_get_x() != new_stepx) {
+			position_x_increment(xs);
+			motor_x_move(dir_x);
+		} else { xStop = true; }
+
+		if(position_get_y() != new_stepy) {
+			position_y_increment(ys);
+			motor_y_move(dir_y);
+		} else { yStop = true;}
+
+		if(position_get_z() != new_stepz) {
+			position_z_increment(zs);
+			motor_z_move(dir_z);
+		} else {zStop = true;}
+		vTaskDelay(delay);
+	}
 }
 
 
 void home_all()
 {
 
+	speed_t delay = gcode_block_get_speed();
+
 	while(!end_stop_x_is_press()) {
 		motor_x_move(HOMEX);
-		vTaskDelay(gcode_block_get_speed());
+		vTaskDelay(delay);
 	}
 	while(end_stop_x_is_press()) {
 		motor_x_move(~HOMEX);
-		vTaskDelay(gcode_block_get_speed());
+		vTaskDelay(delay);
 	}
-/*
 	while(!end_stop_y_is_press()) {
 		motor_y_move(HOMEX);
-		vTaskDelay(gcode_block_get_speed());
+		vTaskDelay(delay);
 	}
 	while(end_stop_y_is_press()) {
 		motor_y_move(~HOMEX);
-		vTaskDelay(gcode_block_get_speed());
+		vTaskDelay(delay);
 	}
 
 	while(!end_stop_z_is_press()) {
 		motor_z_move(HOMEX);
-		vTaskDelay(gcode_block_get_speed());
+		vTaskDelay(delay);
 	}
 	while(end_stop_z_is_press()) {
 		motor_z_move(~HOMEX);
-		vTaskDelay(gcode_block_get_speed());
+		vTaskDelay(delay);
 	}
-	*/
 }

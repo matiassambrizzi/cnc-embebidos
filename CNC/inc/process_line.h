@@ -11,6 +11,7 @@
 #include "task.h"
 #include "queue.h"
 #include "config.h"
+#include "uart.h"
 
 /**
 * @brief freeRTOS Task, esta tarea se encarga de procesar las sentencias
@@ -21,8 +22,8 @@
 void processGcodeLineTask(void *parameters);
 
 
-void process_line(char *rxLine);
-int read_number(char *rxLine, size_t *counter, float *number);
+//void process_line(char *rxLine);
+int read_number(char *rxLine, uint8_t *counter, float *number);
 
 
 #endif

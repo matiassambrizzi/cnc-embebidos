@@ -25,9 +25,11 @@ void uartProcessRxEventTask(void * taskParamPrt);
 * @return nothing
 */
 void onRx(void *);
-
-
-
-
+/**
+* @brief Función para indicarle al encargado de enviar los codigos G que el
+* buffer no está lleno y que puede mandar las proximas sentencias
+* @return nothing
+*/
+void ready_to_process(void);
 
 #endif

@@ -39,12 +39,12 @@ int main(void)
 	//UART config
 	uart_config();
 
-	xPointsQueue = xQueueCreate(5, sizeof(position_t));
+	xPointsQueue = xQueueCreate(15, sizeof(position_t));
 
 	xTaskCreate(uartProcessRxEventTask,
 		    (const char*)"MyTaskUart",
 		    configMINIMAL_STACK_SIZE*2,
-		    0, //PARAMETROS
+		    NULL, //PARAMETROS
 		    tskIDLE_PRIORITY+1,
 		    &xHandleUART);
 

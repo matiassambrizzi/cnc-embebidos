@@ -1,4 +1,5 @@
 #include "uart.h"
+#include "sapi_uart.h"
 
 TaskHandle_t xHandleProcessLine = NULL;
 TaskHandle_t xHandleUART = NULL;
@@ -67,3 +68,12 @@ void onRx(void *noUso)
 	uartInterrupt(UART_PORT, false);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
+
+
+void ready_to_process()
+{
+	//Bloking Send Byte
+	uartWriteByte(UART_PORT, READY_TO_PROCESS_CHAR);
+}
+
+

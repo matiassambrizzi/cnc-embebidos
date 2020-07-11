@@ -51,7 +51,18 @@
 #define LEFT			0
 #define RIGHT			~LEFT
 
+/*
+ * El Baudrate de la comunicación serie
+*/
+#define COM_BAUDRATE		115200
+#define UART_PORT		UART_USB
 
-#define UPGRADE_LINE
+
+/*
+ * Home direction X
+*/
+#define HOMEX			0
+
+
 
 #endif

@@ -10,6 +10,8 @@
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "queue.h"
+#include "sapi_gpio.h"
+#include "sapi_peripheral_map.h"
 #include "task.h"
 #include "semphr.h"
 #include "sapi.h"
@@ -33,6 +35,8 @@ void myTaskUART(void * taskParamPrt);
 void myTaskPrint(void *parameters);
 void moveMotors(void *param);
 
+void home_all();
+
 void line_move(float newx, float newy, float newz);
 void fast_move(float newx, float newy, float newz);
 void process_line(char *rxLine);
@@ -52,7 +56,8 @@ position_t future_pos = {.px=0, .py=0, .pz=0};
 typedef enum {
 	FAST_MOVMENT,
 	LINE,
-	ARC //TODO.
+	ARC, //TODO.
+	HOMING
 } movment_type_t;
 
 typedef TickType_t speed_t;
@@ -88,7 +93,6 @@ static TickType_t speed_to_ticks(float s)
 	if(s > 100) {
 		s = 100;
 	}
-
 	return pdMS_TO_TICKS(101 - s);
 }
 
@@ -102,6 +106,7 @@ int main(void)
 	gpioInit(MOTOR_Y_STEP, GPIO_OUTPUT);
 	gpioInit(MOTOR_Z_DIR, GPIO_OUTPUT);
 	gpioInit(MOTOR_Z_STEP, GPIO_OUTPUT);
+	gpioInit(GPIO8, GPIO_INPUT);
 
 	block.type = 0;
 	block.future.px = 0;
@@ -114,9 +119,9 @@ int main(void)
 		     MOTOR_Z_STEP, MOTOR_Z_DIR);
 
 	//UART config
-	uartConfig(UART_USB, 115200);
-	uartCallbackSet(UART_USB, UART_RECEIVE, onRx, NULL);
-	uartInterrupt(UART_USB, true);
+	uartConfig(UART_PORT, COM_BAUDRATE);
+	uartCallbackSet(UART_PORT, UART_RECEIVE, onRx, NULL);
+	uartInterrupt(UART_PORT, true);
 
 	xPointsQueue = xQueueCreate(5, sizeof(position_t));
 
@@ -165,6 +170,20 @@ void moveMotors(void *param)
 			case FAST_MOVMENT:
 				fast_move(move.px, move.py, move.pz);
 				break;
+			case HOMING:
+				home_all();
+				actual_pos.px = 0;
+				actual_pos.py = 0;
+				actual_pos.pz = 0;
+				block.future.px = 0;
+				block.future.pz = 0;
+				block.future.py = 0;
+				block.type = FAST_MOVMENT;
+				// Aca tengo que ejecutar la función de home
+				// y resetear la pos actual y la futura.
+				// y resetear el modo de movimiento para evitar
+				// otro homing
+				break;
 			default:
 				;
 		}
@@ -195,10 +214,10 @@ void myTaskUART(void * taskParamPrt)
 		if(ulEventsToProcess) {
 			//Si estoy aca es porque la interrupción del UART
 			//se activo y dio el semáforo
-			while(uartRxReady(UART_USB)) {
+			while(uartRxReady(UART_PORT)) {
 				//Si estoy aca es por que quedan datos
 				//en el fifo del uart
-				if((rx_char = uartRxRead(UART_USB)) != ' ') {
+				if((rx_char = uartRxRead(UART_PORT)) != ' ') {
 					if((rx_line[i] = rx_char) == '\n' || i > 15){
 						rx_line[i] = '\0';
 						i = 0;
@@ -216,7 +235,7 @@ void myTaskUART(void * taskParamPrt)
 
 			}
 			//Habilito otra vez la interrupcion del uart
-			uartInterrupt(UART_USB, true);
+			uartInterrupt(UART_PORT, true);
 		} else {
 
 		}
@@ -232,8 +251,6 @@ void myTaskPrint(void *parameters)
 
 	while(1) {
 
-		//xQueueReceive(xQueue, str, portMAX_DELAY);
-
 		ulEventsToProcess = ulTaskNotifyTake(pdTRUE, maxExpectedBlockTime);
 
 		if(ulEventsToProcess) {
@@ -241,11 +258,7 @@ void myTaskPrint(void *parameters)
 		} else {
 			;
 		}
-
 	}
-
-
-
 }
 
 
@@ -253,7 +266,7 @@ void onRx(void *noUso)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	vTaskNotifyGiveFromISR(xHandleTask, &xHigherPriorityTaskWoken);
-	uartInterrupt(UART_USB, false);
+	uartInterrupt(UART_PORT, false);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
@@ -266,14 +279,14 @@ void process_line(char *rxLine)
 	uint8_t int_val;
 	bool_t movment = false;
 
-	uartWriteString(UART_USB, rxLine);
+	uartWriteString(UART_PORT, rxLine);
 	//Check for EOL
 	while(rxLine[counter] != '\0') {
 
 		letter = rxLine[counter];
 		if((read_number(rxLine, &counter, &number)) != 0) {
 			//Error reading number Discart line
-			uartWriteString(UART_USB, "Descarto valor");
+			uartWriteString(UART_PORT, "Descarto valor");
 			return;
 		}
 
@@ -285,12 +298,12 @@ void process_line(char *rxLine)
 			switch (int_val) {
 			case 0:
 				//Fast Move
-				uartWriteString(UART_USB, "Movimiento Rapido\r\n");
+				uartWriteString(UART_PORT, "Movimiento Rapido\r\n");
 				block.type = FAST_MOVMENT;
 				break;
 			case 1:
 				//line move
-				uartWriteString(UART_USB, "Movimiento Lineal\r\n");
+				uartWriteString(UART_PORT, "Movimiento Lineal\r\n");
 				block.type = LINE;
 				break;
 			case 2:
@@ -309,10 +322,12 @@ void process_line(char *rxLine)
 				break;
 			case 28:
 				//TODO: Homing
+				block.type = HOMING;
+				movment = true;
 				break;
 
 			case 90:
-				uartWriteString(UART_USB, "ModoAbsoluto\r\n");
+				uartWriteString(UART_PORT, "ModoAbsoluto\r\n");
 				//Absolute mode
 				break;
 			case 91:
@@ -322,7 +337,7 @@ void process_line(char *rxLine)
 				//Set this pos as 0,0,0
 				break;
 			default:
-				uartWriteString(UART_USB, "Defaultcase num\r\n");
+				uartWriteString(UART_PORT, "Defaultcase num\r\n");
 				//Do nothing
 				break;
 			}
@@ -330,21 +345,21 @@ void process_line(char *rxLine)
 			break;
 
 		case 'X':
-			//uartWriteString(UART_USB, "Setting X\r\n");
+			//uartWriteString(UART_PORT, "Setting X\r\n");
 			//printf("%d\n", (int) (number*100));
 			future_pos.px = number;
 			block.future.px = number;
 			movment = true;
 			break;
 		case 'Y':
-			//uartWriteString(UART_USB, "Setting Y\r\n");
+			//uartWriteString(UART_PORT, "Setting Y\r\n");
 			//printf("%d\n", (int) number);
 			future_pos.py = number;
 			block.future.py = number;
 			movment = true;
 			break;
 		case 'Z':
-			//uartWriteString(UART_USB, "Setting Z\r\n");
+			//uartWriteString(UART_PORT, "Setting Z\r\n");
 			//printf("%d\n", (int) number);
 			future_pos.pz = number;
 			block.future.pz = number;
@@ -356,7 +371,7 @@ void process_line(char *rxLine)
 			break;
 
 		default:
-			uartWriteString(UART_USB, "Defaultcase value\r\n");
+			uartWriteString(UART_PORT, "Defaultcase value\r\n");
 			//Do nothing
 			;
 		}
@@ -589,7 +604,18 @@ void fast_move(float newx, float newy, float newz)
 
 
 
+void home_all()
+{
 
+	while(gpioRead(GPIO8)) {
+		motor_x_move(HOMEX);
+		vTaskDelay(block.speed);
+	}
+	while(!gpioRead(GPIO8)) {
+		motor_x_move(~HOMEX);
+		vTaskDelay(block.speed);
+	}
+}
 
 
 

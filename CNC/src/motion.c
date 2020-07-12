@@ -18,6 +18,24 @@ static uint8_t my_direc(int32_t d)
 	return (d < 0) ? LEFT:RIGHT;
 }
 
+static void increment_move_x(int8_t xxs, uint8_t dir_xx)
+{
+	position_x_increment(xxs);
+	motor_x_move(dir_xx);
+}
+
+static void increment_move_y(int8_t xxs, uint8_t dir_xx)
+{
+	position_y_increment(xxs);
+	motor_y_move(dir_xx);
+}
+
+static void increment_move_z(int8_t xxs, uint8_t dir_xx)
+{
+	position_z_increment(xxs);
+	motor_z_move(dir_xx);
+}
+
 void moveMotorsTask(void *param)
 {
 
@@ -42,10 +60,7 @@ void moveMotorsTask(void *param)
 			default:
 				;
 		}
-
 	}
-
-
 }
 
 void line_move(float newx, float newy, float newz)
@@ -59,6 +74,7 @@ void line_move(float newx, float newy, float newz)
 	// desiciones que forman parte del algoritmo
 	int32_t decision1, decision2;
 
+	speed_t delay = gcode_block_get_speed();
 	// La posicion actual la guardo en pasos
 	// la nueva posicion viene en milimetros
 	// entonces la convierto a pasos.
@@ -86,11 +102,11 @@ void line_move(float newx, float newy, float newz)
 	//Calculo el maximo delta
 	max_steps = max(delta_x, delta_y, delta_z);
 
-
 	// Then X is driving
 	if(max_steps == delta_x) {
-		decision1 = 2 * delta_y - delta_x;
-		decision2 = 2 * delta_z - delta_x;
+		decision1 = (delta_y<<1) - delta_x;
+		decision2 = (delta_z<<1) - delta_x;
+
 		while(position_get_x() != new_stepx) {
 			position_x_increment(xs);
 			motor_x_move(dir_x);
@@ -99,7 +115,7 @@ void line_move(float newx, float newy, float newz)
 				if(ys) {
 					motor_y_move(dir_y);
 				}
-					decision1 -= 2*delta_x;
+					decision1 -= (delta_x<<1);
 
 			}
 			if(decision2 >= 0) {
@@ -107,18 +123,17 @@ void line_move(float newx, float newy, float newz)
 				if(zs) {
 					motor_z_move(dir_z);
 				}
-					decision2 -= 2*delta_x;
+					decision2 -= (delta_x<<1);
 			}
-			decision1 += 2 * delta_y;
-			decision2 += 2 * delta_z;
+			decision1 += (delta_y<<1);
+			decision2 += (delta_z<<1);
 			// Delay de velocidad
-			vTaskDelay(gcode_block_get_speed());
-			//delay(10);
+			vTaskDelay(delay);
 		}
 	//Then Y is driving
 	} else if(max_steps == delta_y) {
-		decision1 = 2 * delta_x - delta_y;
-		decision2 = 2 * delta_z - delta_y;
+		decision1 = (delta_x<<1) - delta_y;
+		decision2 = (delta_z<<1) - delta_y;
 		while(position_get_y() != new_stepy) {
 			position_y_increment(ys);
 			motor_y_move(dir_y);
@@ -127,7 +142,7 @@ void line_move(float newx, float newy, float newz)
 				if(ys) {
 					motor_x_move(dir_x);
 				}
-					decision1 -= 2*delta_y;
+					decision1 -= (delta_y<<1);
 
 			}
 			if(decision2 >= 0) {
@@ -135,18 +150,18 @@ void line_move(float newx, float newy, float newz)
 				if(zs) {
 					motor_z_move(dir_z);
 				}
-					decision2 -= 2*delta_y;
+					decision2 -= (delta_y<<1);
 			}
-			decision1 += 2 * delta_x;
-			decision2 += 2 * delta_z;
+			decision1 += (delta_x<<1);
+			decision2 += (delta_z<<1);
 			// Delay de velocidad
 			//delay(10);
-			vTaskDelay(gcode_block_get_speed());
+			vTaskDelay(delay);
 		}
 	// Then Z is driving
 	} else {
-		decision1 = 2 * delta_y - delta_z;
-		decision2 = 2 * delta_x - delta_z;
+		decision1 = (delta_y<<1) - delta_z;
+		decision2 = (delta_x<<1) - delta_z;
 		while(position_get_z() != new_stepz) {
 			position_z_increment(zs);
 			motor_z_move(dir_z);
@@ -155,7 +170,7 @@ void line_move(float newx, float newy, float newz)
 				if(ys) {
 					motor_y_move(dir_y);
 				}
-					decision1 -= 2*delta_z;
+					decision1 -= (delta_z<<1);
 
 			}
 			if(decision2 >= 0) {
@@ -163,13 +178,13 @@ void line_move(float newx, float newy, float newz)
 				if(zs) {
 					motor_x_move(dir_x);
 				}
-					decision2 -= 2*delta_z;
+					decision2 -= (delta_z<<1);
 			}
-			decision1 += 2 * delta_y;
-			decision2 += 2 * delta_x;
+			decision1 += (delta_y<<1);
+			decision2 += (delta_x<<1);
 			// Delay de velocidad
 			//delay(10);
-			vTaskDelay(gcode_block_get_speed());
+			vTaskDelay(delay);
 		}
 	}
 }

@@ -11,15 +11,9 @@ typedef struct {
 static g_block_t rx_gcode;
 
 
-static TickType_t speed_to_ticks(float s)
+static TickType_t speed_to_ticks(uint8_t s)
 {
-	if(s < 1) {
-		s = 1;
-	}
-	if(s > 100) {
-		s = 100;
-	}
-	return pdMS_TO_TICKS(101 - s);
+	return pdMS_TO_TICKS(101-s%101);
 }
 
 void gcode_block_reset()

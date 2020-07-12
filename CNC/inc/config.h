@@ -1,12 +1,8 @@
 #ifndef _CONFIG__H_
 #define _CONFIG__H_
-
-
 /*
  * Poner toda las configuraciones del usuario aca
 */
-
-
 
 /*
  * Paso por vuelta, esta variable dependerá de cada motor
@@ -51,7 +47,28 @@
 #define LEFT			0
 #define RIGHT			~LEFT
 
+/*
+ * El Baudrate de la comunicación serie
+*/
+#define COM_BAUDRATE		115200
+#define UART_PORT		UART_USB
 
-#define UPGRADE_LINE
+
+//TODO: Definir los pines de los endstops
+#define END_STOP_X		GPIO8
+#define END_STOP_Y		GPIO8
+#define END_STOP_Z		GPIO8
+
+/*
+ * Home direction X
+*/
+#define HOMEX			0
+
+/**
+* Maxima cantidad de caracters que se almacenana en el buffer de rx uart
+*/
+#define MAX_RX_BUFFER		15
+
+#define	READY_TO_PROCESS_CHAR   '$'
 
 #endif

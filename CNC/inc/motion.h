@@ -1,10 +1,10 @@
 #ifndef _MOTION__H_
 #define _MOTION__H_
 
+#include <math.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-
 #include "motors.h"
 #include "gcode.h"
 #include "position.h"

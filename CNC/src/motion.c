@@ -102,12 +102,32 @@ void line_move(float newx, float newy, float newz)
 	//Calculo el maximo delta
 	max_steps = max(delta_x, delta_y, delta_z);
 
+#ifdef TESTING_ACC
+	// para evitar division por cero
+	uint32_t vMin = 1; //stepsPerSec
+	uint32_t vMax = 1000; //stepsPerSec
+	float accel = 1000;  //stepsPerSecPerSec
+
+	step_count_t pos;
+	step_count_t initPos = position_get_x();
+
+	float vel = vMin; // Init speed
+	uint32_t stepsToMaxVel = vMax*vMax/(2*accel); // steps
+	if(delta_x < stepsToMaxVel) {
+		// Hay que bajar la velocidad porque la distancia es corta
+		vMax = stepsToMaxVel*accel;
+		stepsToMaxVel = vMax*vMax/(2*accel);
+	}
+	//TODO: Ver que pasa con numeros negativos
+#endif
+	// Get actual time in ticks
 	// Then X is driving
 	if(max_steps == delta_x) {
 		decision1 = (delta_y<<1) - delta_x;
 		decision2 = (delta_z<<1) - delta_x;
 
-		while(position_get_x() != new_stepx) {
+		while((pos=position_get_x()) != new_stepx) {
+
 			position_x_increment(xs);
 			motor_x_move(dir_x);
 			if(decision1 >= 0) {
@@ -127,8 +147,22 @@ void line_move(float newx, float newy, float newz)
 			}
 			decision1 += (delta_y<<1);
 			decision2 += (delta_z<<1);
-			// Delay de velocidad
-			vTaskDelay(delay);
+#ifdef TESTING_ACC
+			if(pos <= initPos+stepsToMaxVel) {
+				if(vel < vMax) {
+					vel += accel/vel;
+				} else {
+					vel = vMax;
+				}
+			} else if(pos >= (new_stepx-stepsToMaxVel)) {
+				if(vel > vMin) {
+					vel -= accel/vel;
+				} else {
+					vel = vMin;
+				}
+			}
+			vTaskDelay(pdMS_TO_TICKS(1000/vel)); //vel esta en steps/s * 1000 = steps/ms
+#endif
 		}
 	//Then Y is driving
 	} else if(max_steps == delta_y) {
@@ -156,6 +190,7 @@ void line_move(float newx, float newy, float newz)
 			decision2 += (delta_z<<1);
 			// Delay de velocidad
 			//delay(10);
+			// Ver como incrementar la velocidad de a poco
 			vTaskDelay(delay);
 		}
 	// Then Z is driving

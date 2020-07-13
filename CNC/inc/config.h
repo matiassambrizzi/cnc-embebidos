@@ -9,7 +9,7 @@
  * en este caso estoy usando un motor que vanaza 1.8° por
  * paso. Entonces 360° / 1.8° = 200 pasos/vuelta
 */
-#define STEPS_PER_REV		200
+#define STEPS_PER_REV			(200)
 
 /*
  * Pasos por milimetro, esto depende de la varilla o correa
@@ -17,26 +17,26 @@
  * 1mm por vuelta, y como para dar una vuelta tengo que dar
  * 200 pasos -> 200 pasos/mm
 */
-#define STEPS_PER_MM		200
+#define STEPS_PER_MM			(200)
 
 /*
  * Configuracion del motor del eje X. Actualizar estos defines
  * con el pin que se utilice para controlar cada motor
 */
-#define MOTOR_X_DIR		GPIO1
-#define MOTOR_X_STEP		GPIO3
+#define MOTOR_X_DIR			(GPIO1)
+#define MOTOR_X_STEP			(GPIO3)
 
 /*
  * Configuracion del motor del eje Y
 */
-#define MOTOR_Y_DIR		GPIO2
-#define MOTOR_Y_STEP		GPIO4
+#define MOTOR_Y_DIR			(GPIO2)
+#define MOTOR_Y_STEP			(GPIO4)
 
 /*
  * Configuracion del motor del eje X
 */
-#define MOTOR_Z_DIR		GPIO5
-#define MOTOR_Z_STEP		GPIO7
+#define MOTOR_Z_DIR			(GPIO5)
+#define MOTOR_Z_STEP			(GPIO7)
 
 /*
  * Motor gira a la derecha o izquierda. Con esto se pueden cambiar
@@ -44,31 +44,41 @@
  * todos de la misma forma
  * TODO: Ver de hacer una configuración distinta para cada motor
 */
-#define LEFT			0
-#define RIGHT			~LEFT
+#define LEFT				(0)
+#define RIGHT				(~LEFT)
 
 /*
  * El Baudrate de la comunicación serie
 */
-#define COM_BAUDRATE		115200
-#define UART_PORT		UART_USB
+#define COM_BAUDRATE			(115200)
+#define UART_PORT			(UART_USB)
 
 
 //TODO: Definir los pines de los endstops
-#define END_STOP_X		GPIO8
-#define END_STOP_Y		GPIO8
-#define END_STOP_Z		GPIO8
+#define END_STOP_X			(GPIO8)
+#define END_STOP_Y			(GPIO8)
+#define END_STOP_Z			(GPIO8)
 
 /*
  * Home direction X
 */
-#define HOMEX			0
+#define HOMEX				(0)
 
 /**
 * Maxima cantidad de caracters que se almacenana en el buffer de rx uart
 */
-#define MAX_RX_BUFFER		15
+#define MAX_RX_BUFFER			(15)
 
-#define	READY_TO_PROCESS_CHAR   '$'
+#define	READY_TO_PROCESS_CHAR		('$')
 
+#define TESTING_ACC
+
+// maxima Velocidad medida en pasos por segundo
+// 300 Steps/second -> Se taduce en un delay de aproximadamente 3ms
+#define MAX_VEL_STEPS_PER_SECOND	(300)
+//Minima velocidad distinta de cero para evitar una division por cero
+//en el algoritmo de aceleración
+#define MIN_VEL_STEPS_PER_SECOND	(1)
+
+#define MAX_ACCEL_STEPS_PER_SECOND_SQUARE (300)
 #endif

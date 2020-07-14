@@ -36,7 +36,7 @@ void processGcodeLineTask(void *parameters)
 			letter = '\0';
 			number = 0;
 			int_val = 0;
-			movment = 0;
+			movment = false;
 
 			uartWriteString(UART_PORT, rx_line);
 			uartWriteString(UART_PORT, "\r\n");
@@ -59,7 +59,7 @@ void processGcodeLineTask(void *parameters)
 				if((read_number(rx_line, &counter, &number)) != 0) {
 					//Error reading number Discart line
 					uartWriteString(UART_PORT, "Descarto valor");
-					return;
+					letter = 'D';
 				}
 
 				int_val = (uint8_t) number;
@@ -199,7 +199,7 @@ int read_number(char *rxLine, uint8_t *counter, float *number)
 	// TODO: STRTOF: Cuando le mando 0.1 a 0.9 me lo reconoce como 0 a menos
 	// que el agregegue el signo WTF??
 	if(*(iterator+i) != '0') {
-		*number = strtof(iterator+i, &aux);
+		*number = strtod(iterator+i, &aux);
 		//*number = atof(iterator+i);
 		if(aux == NULL) {
 			return -1;

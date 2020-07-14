@@ -5,12 +5,6 @@
 
 typedef int32_t step_count_t;
 
-typedef struct {
-	step_count_t px;
-	step_count_t py;
-	step_count_t pz;
-} steps_t;
-
 /**
 * @brief resetear la posición actual
 * @return nothing

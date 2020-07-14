@@ -9,7 +9,21 @@
 #include "gcode.h"
 #include "position.h"
 #include "uart.h"
+#include "types.h"
 
+/**
+* @brief Resetear los parametros del movimiento
+* se usa cuando se inicia el micro o despues de hacer un ciclo de home
+* @return nothing
+*/
+void motion_reset();
+
+
+/**
+* @brief Seteo de la aceleración
+* @return nothing
+*/
+void motion_set_accel(const uint32_t accel);
 
 /**
 * @brief FreeRTOS Task para maover los motores

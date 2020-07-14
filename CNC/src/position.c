@@ -2,7 +2,16 @@
 
 // Variable Global privada que lleva la cuenta de la posición
 // actual de los motores en el plano en pasos.
+
+typedef struct {
+	step_count_t px;
+	step_count_t py;
+	step_count_t pz;
+} steps_t;
+
+
 steps_t actual_pos={.px=0, .py=0, .pz=0};
+
 
 void position_reset()
 {

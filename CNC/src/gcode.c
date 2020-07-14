@@ -1,16 +1,9 @@
 #include "gcode.h"
 
-typedef struct {
-	position_t future;
-	movment_type_t type;
-	speed_t speed;
-} g_block_t;
-
-
 // Instancia Privada de codigoG recibido por UART
 static g_block_t rx_gcode;
 
-
+// TODO: Ver esta función
 static TickType_t speed_to_ticks(uint8_t s)
 {
 	return pdMS_TO_TICKS(101-s%101);
@@ -19,33 +12,37 @@ static TickType_t speed_to_ticks(uint8_t s)
 void gcode_block_reset()
 {
 	position_reset();
-	rx_gcode.future.px = 0;
-	rx_gcode.future.py = 0;
-	rx_gcode.future.pz = 0;
+	rx_gcode.target_pos.px = 0;
+	rx_gcode.target_pos.py = 0;
+	rx_gcode.target_pos.pz = 0;
 	rx_gcode.type = FAST_MOVMENT;
 	rx_gcode.speed = speed_to_ticks(90);
+	rx_gcode.velocity = MAX_VEL_STEPS_PER_SECOND * 0.9;
+	rx_gcode.units = MILLIMETERS;
 }
 
 
 void gcode_block_set_x(const float x)
 {
-	rx_gcode.future.px = x;
+	rx_gcode.target_pos.px = x;
 }
 
 void gcode_block_set_y(const float y)
 {
-	rx_gcode.future.py = y;
+	rx_gcode.target_pos.py = y;
 }
 
 void gcode_block_set_z(const float z)
 {
-	rx_gcode.future.pz = z;
+	rx_gcode.target_pos.pz = z;
 }
 
 
-void gcode_block_set_speed(const uint8_t s)
+void gcode_block_set_speed(const float s)
 {
-	rx_gcode.speed = speed_to_ticks(s);
+//	rx_gcode.speed = speed_to_ticks(s);
+//	s es un valor porcentual
+	rx_gcode.velocity = MAX_VEL_STEPS_PER_SECOND * (s / 100.0);
 }
 
 void gcode_block_set_movment(const movment_type_t m)
@@ -66,5 +63,12 @@ movment_type_t gcode_block_get_movement()
 
 position_t * gcode_block_get_position()
 {
-	return (position_t *) (&(rx_gcode.future));
+	return (position_t *) (&(rx_gcode.target_pos));
 }
+
+
+gBlockPtr gcode_get_block()
+{
+	return (gBlockPtr) (&(rx_gcode));
+}
+

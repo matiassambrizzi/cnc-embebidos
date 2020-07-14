@@ -12,6 +12,10 @@
 #include "queue.h"
 #include "config.h"
 #include "uart.h"
+#include "motion.h"
+
+extern char rx_line[MAX_RX_BUFFER];
+extern QueueHandle_t xPointsQueue;
 
 /**
 * @brief freeRTOS Task, esta tarea se encarga de procesar las sentencias
@@ -21,8 +25,6 @@
 */
 void processGcodeLineTask(void *parameters);
 
-
-//void process_line(char *rxLine);
 int read_number(char *rxLine, uint8_t *counter, float *number);
 
 

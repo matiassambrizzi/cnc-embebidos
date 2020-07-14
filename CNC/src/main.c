@@ -5,7 +5,6 @@
 #include "FreeRTOSConfig.h"
 #include "queue.h"
 #include "task.h"
-#include "semphr.h"
 
 #include "sapi.h"
 #include "motors.h"
@@ -17,8 +16,6 @@
 #include "uart.h"
 #include "process_line.h"
 
-// Declaro que las variables existen
-// Despues las defino en otro lado
 extern char rx_line[MAX_RX_BUFFER];
 extern TaskHandle_t xHandleProcessLine;
 extern QueueHandle_t xPointsQueue;
@@ -39,7 +36,10 @@ int main(void)
 	//UART config
 	uart_config();
 
-	xPointsQueue = xQueueCreate(15, sizeof(position_t));
+	// Reset acceleration config
+	motion_reset();
+
+	xPointsQueue = xQueueCreate(15, sizeof(g_block_t));
 
 	xTaskCreate(uartProcessRxEventTask,
 		    (const char*)"MyTaskUart",

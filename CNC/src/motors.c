@@ -9,9 +9,9 @@ typedef struct {
 
 // Instancias privadas de los motores
 // Estas solo se podrán acceder con funciones de la API
-motor_t x_motor;
-motor_t y_motor;
-motor_t z_motor;
+static motor_t x_motor;
+static motor_t y_motor;
+static motor_t z_motor;
 
 static void onestep(motor_t m)
 {

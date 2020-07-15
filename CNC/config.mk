@@ -8,7 +8,9 @@ USE_FPU=y
 
 ## Cosas de freeRTOS
 USE_FREERTOS=y
-FREERTOS_HEAP_TYPE=4
+## en heap 1 freertos no usa memoria dinámica para
+## alocar las tareas en memoria. 
+FREERTOS_HEAP_TYPE=1
 # Libraries
 
 USE_LPCOPEN=y

@@ -1,9 +1,20 @@
 #include "process_line.h"
 
-extern char rx_line[MAX_RX_BUFFER];
-extern QueueHandle_t xPointsQueue;
 
-//Make this static
+/*
+ * Prototipos funciones privadas
+ * =============================
+ */
+static bool_t isNumber(const uint8_t c);
+static bool_t isLetter(const uint8_t c);
+
+
+
+
+/*
+ * Implementación de funciones privadas
+ * ====================================
+ */
 static bool_t isLetter(const uint8_t c)
 {
 	return (c >= 'A' && c <= 'Z');
@@ -11,9 +22,13 @@ static bool_t isLetter(const uint8_t c)
 
 static bool_t isNumber(const uint8_t c)
 {
-	return (c>= '0' && c<= '9');
+	return (c >= '0' && c<= '9');
 }
 
+/*
+ * Implementación de funciones públicas
+ * ====================================
+ */
 void processGcodeLineTask(void *parameters)
 {
 
@@ -22,6 +37,7 @@ void processGcodeLineTask(void *parameters)
 
 	uint8_t counter = 0;
 	char letter;
+	char command_letter;
 	float number=0;
 	uint8_t int_val = 0;
 	bool_t movment = false;
@@ -37,7 +53,7 @@ void processGcodeLineTask(void *parameters)
 			letter = '\0';
 			number = 0;
 			int_val = 0;
-			movment = 0;
+			movment = false;
 
 			uartWriteString(UART_PORT, rx_line);
 			uartWriteString(UART_PORT, "\r\n");
@@ -45,10 +61,22 @@ void processGcodeLineTask(void *parameters)
 			while(rx_line[counter] != '\0') {
 
 				letter = rx_line[counter];
+
+				//We have a command
+				if(letter == '$') {
+
+					// read the next letter
+					// update counter and save command
+					// letter
+					uartWriteString(UART_USB,"Me llego un comando\r\n");
+					counter++;
+					command_letter = rx_line[counter];
+				}
+
 				if((read_number(rx_line, &counter, &number)) != 0) {
 					//Error reading number Discart line
 					uartWriteString(UART_PORT, "Descarto valor");
-					return;
+					letter = 'D';
 				}
 
 				int_val = (uint8_t) number;
@@ -69,6 +97,7 @@ void processGcodeLineTask(void *parameters)
 						break;
 					case 2:
 						//TODO: Arc Move
+						uartWriteString(UART_PORT, "Movimiento en Arco\r\n");
 						gcode_block_set_movment(ARC);
 						break;
 					case 10:
@@ -80,6 +109,7 @@ void processGcodeLineTask(void *parameters)
 						break;
 					case 28:
 						//TODO: Homing
+						uartWriteString(UART_PORT, "HOMING\r\n");
 						gcode_block_set_movment(HOMING);
 						movment = true;
 						break;
@@ -116,27 +146,52 @@ void processGcodeLineTask(void *parameters)
 					//Updated Speed
 					break;
 
+				//Command case
+				case '$':
+					switch (command_letter) {
+					case 'a':
+						// set accel = number
+						printf("Numero %d\r\n", (int32_t) number);
+						motion_set_accel(number);
+						break;
+					case '$':
+						// Imprimir la configuración
+						// actual
+						break;
+					default:
+						printf("Default Command", (int32_t) number);
+						;
+					}
+					break;
+
 				default:
 					uartWriteString(UART_PORT, "Defaultcase value\r\n");
 					;
 				}
 			}
+			// Me fijo si el comando corresponde con un movimiento
+			// si esto es verdad esntones pongo el bloque en la cola
 			if(movment) {
 				// Si el comando corresponde con G28(HOMING)
 				// Se envia a la cola una posicion futura random
-				// Se llega alguna otra posición se pierde.
-				// Luego de generar homing tiene que ser una
-				// tarea aparte con prioridad alta ?
-				// y cuando se quiera hcaer un homing se notique
 				if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
 				   gcode_block_get_movement() != HOMING) {
 					ready_to_process();
 				}
-				xQueueSend(xPointsQueue, (gcode_block_get_position()), portMAX_DELAY);
+				xQueueSend(xPointsQueue, (gcode_get_block()),
+					   portMAX_DELAY);
 			}
 
 		} else {
-			;
+			// Si estoy aca es porque no me llego ningun dato en
+			// 500ms -> mando que estoy listo si tengo espacio en la
+			// cola. Si estoy en medio de un HOMING tampoco mando
+			// que estoy listo. Cuando termine ese cilco mandare el
+			// ready y reseteare el gCodeblock.
+			//if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
+			 //  gcode_block_get_movement() != HOMING) {
+			//	ready_to_process();
+			//}
 		}
 	}
 }
@@ -158,8 +213,10 @@ int read_number(char *rxLine, uint8_t *counter, float *number)
 	}
 	*/
 	//atof is secure ?
+	// TODO: STRTOF: Cuando le mando 0.1 a 0.9 me lo reconoce como 0 a menos
+	// que el agregegue el signo WTF??
 	if(*(iterator+i) != '0') {
-		*number = strtof(iterator+i, &aux);
+		*number = strtod(iterator+i, &aux);
 		//*number = atof(iterator+i);
 		if(aux == NULL) {
 			return -1;

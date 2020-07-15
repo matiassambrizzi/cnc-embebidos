@@ -1,10 +1,31 @@
 #include "uart.h"
 #include "sapi_uart.h"
 
+
+/*
+ * Variables globales
+ * ==================
+ */
+
 TaskHandle_t xHandleProcessLine = NULL;
 TaskHandle_t xHandleUART = NULL;
 // Variable global que almacena las lineas
 char rx_line[MAX_RX_BUFFER];
+
+/*
+ * Implementación de funciones públicas
+ * ====================================
+ */
+
+// s es una variable previamente allocada en memoria
+// copio rx_line a s
+int8_t uart_get_buffer(char *s)
+{
+	for(uint8_t i = 0; i < MAX_RX_BUFFER; i++) {
+		s[i] = rx_line[i];
+	}
+	return 0;
+}
 
 
 void uart_config()

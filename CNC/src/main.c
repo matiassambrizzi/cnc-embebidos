@@ -30,13 +30,8 @@ int main(void)
 	motor_config(MOTOR_X_STEP, MOTOR_X_DIR, END_STOP_X,
 		     MOTOR_Y_STEP, MOTOR_Y_DIR, END_STOP_Y,
 		     MOTOR_Z_STEP, MOTOR_Z_DIR, END_STOP_Z);
-
 	gcode_block_reset();
-
-	//UART config
 	uart_config();
-
-	// Reset acceleration config
 	motion_reset();
 
 	xPointsQueue = xQueueCreate(15, sizeof(g_block_t));

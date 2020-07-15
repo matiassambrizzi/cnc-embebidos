@@ -40,9 +40,9 @@ void gcode_block_set_z(const float z)
 
 void gcode_block_set_speed(const float s)
 {
-//	rx_gcode.speed = speed_to_ticks(s);
 //	s es un valor porcentual
-	rx_gcode.velocity = MAX_VEL_STEPS_PER_SECOND * (s / 100.0);
+	const float aux = s / 100.0;
+	rx_gcode.velocity = MAX_VEL_STEPS_PER_SECOND * aux;
 }
 
 void gcode_block_set_movment(const movment_type_t m)

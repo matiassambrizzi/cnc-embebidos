@@ -10,6 +10,7 @@
 #include "position.h"
 #include "uart.h"
 #include "types.h"
+#include "interpolation.h"
 
 /**
 * @brief Resetear los parametros del movimiento

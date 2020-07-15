@@ -32,4 +32,11 @@ void onRx(void *);
 */
 void ready_to_process(void);
 
+/**
+* @brief
+* @param
+* @return
+*/
+int8_t uart_get_buffer(char *s);
+
 #endif

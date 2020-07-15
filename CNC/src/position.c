@@ -10,7 +10,7 @@ typedef struct {
 } steps_t;
 
 
-steps_t actual_pos={.px=0, .py=0, .pz=0};
+static steps_t actual_pos={.px=0, .py=0, .pz=0};
 
 
 void position_reset()

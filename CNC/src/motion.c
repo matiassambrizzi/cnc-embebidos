@@ -1,19 +1,40 @@
 #include "motion.h"
 
-//defino la cola de puntos de movimiento
+
+/*
+ * Variable Global
+ * ===============
+ */
 QueueHandle_t xPointsQueue;
 
+/*
+ * Estructura interna
+ * ==================
+ */
+
+typedef step_count_t (*get_pos)();
 typedef struct {
 	uint32_t accel;  //accel in steps per second square
+	// get pos para el algoritmo de acceleración
+	get_pos pos;
 	uint32_t vel_max; //vel in steps per second
 	uint32_t vel_min; //vel in steps per second
 	step_count_t crop_step_accel;
 	step_count_t crop_step_deaccel;
 } motion_t;
 
-// Variable local que almecena todo lo correspondiente
-// con el calculo del moviminento con aceleración
+/*
+ * Variables internas
+ * ==================
+ */
 static motion_t motion_config;
+static step_count_t init_pos;
+// TODO: NOMBRE MAL PUESTO
+static step_count_t max_new_steps;
+// TODO: NOMBRE MAL PUESTO
+static int32_t max_delta;
+static int8_t direction;
+static uint32_t steps_to_reach_max_vel;
 
 /*
  * Prototipos funciones privadas
@@ -55,8 +76,18 @@ static uint32_t pow2(int32_t x);
 * @param
 * @return
 */
-static void updateVelocity(const float pos, float *vel, const motion_t m, int8_t ss);
+static void updateVelocity(const float pos, float *vel, const motion_t m);
 
+
+/**
+* @brief TODO
+* @param
+* @return
+*/
+static void set_up_velocity(step_count_t initPos,
+			    step_count_t steps,
+			    step_count_t delta,
+			    step_count_t direc);
 
 /*
  * Implementación de funciones privadas
@@ -83,10 +114,10 @@ static uint32_t pow2(int32_t x)
 	return x*x;
 }
 
-static void updateVelocity(const float pos, float *vel, const motion_t m, int8_t ss)
+static void updateVelocity(const float pos, float *vel, const motion_t m)
 {
 	// El algoritmo de aceleración depende de la dirección del movimiento
-	if(ss > 0) {
+	if(direction > 0) {
 		if(pos <= m.crop_step_accel) {
 			if(*vel < m.vel_max) {
 				*vel += m.accel/(*vel);
@@ -122,13 +153,42 @@ static void updateVelocity(const float pos, float *vel, const motion_t m, int8_t
 }
 
 
+static void set_up_velocity(step_count_t initPos,
+			    step_count_t steps,
+			    step_count_t delta,
+			    step_count_t direc)
+{
+	init_pos = initPos;
+	max_new_steps = steps;
+	max_delta = delta;
+	direction = direc;
+
+	steps_to_reach_max_vel = pow2(motion_config.vel_max)/(2*motion_config.accel);
+
+	if(max_delta < 2*steps_to_reach_max_vel) {
+		// Hay que bajar la velocidad porque la distancia es corta
+		// La nueva máxima velocidad será la cantidad de pasos
+		// por la aceleración
+		motion_config.vel_max = sqrt(max_delta*motion_config.accel);
+		steps_to_reach_max_vel = pow2(motion_config.vel_max)/(2*motion_config.accel);
+	}
+
+	if(direction > 0) {
+		motion_config.crop_step_accel = init_pos + steps_to_reach_max_vel;
+		motion_config.crop_step_deaccel = max_new_steps - steps_to_reach_max_vel;
+	} else {
+		motion_config.crop_step_accel = init_pos - steps_to_reach_max_vel;
+		motion_config.crop_step_deaccel = max_new_steps + steps_to_reach_max_vel;
+	}
+
+
+}
 /*
  * Implementación de funciones púbicas
  * ===================================
  */
 void moveMotorsTask(void *param)
 {
-	// variable de configuracion obtenida de la cola
 	g_block_t gblock;
 
 	while(1) {
@@ -184,55 +244,34 @@ void motion_set_accel(const uint32_t accel)
 
 void line_move(float newx, float newy, float newz)
 {
-	//para trackaar la posicion y aumentar la velocidad
 	step_count_t pos;
-	// La posicion actual la guardo en pasos
-	// la nueva posicion viene en milimetros
-	// entonces la convierto a pasos.
-	// TODO: Si estoy en inches entonces tongo que cambiar la
+
+	// Velocidad de los motores, la inicializo con la velocidad mínima
+	float vel = MIN_VEL_STEPS_PER_SECOND;
+
 	const int32_t new_stepx = newx * STEPS_PER_MM;
 	const int32_t new_stepy = newy * STEPS_PER_MM;
 	const int32_t new_stepz = newz * STEPS_PER_MM;
 
+	// Inicio el protocolo de interpolacion
 	interpolation_set_deltas(new_stepx, new_stepy, new_stepz);
 	interpolation_init();
 
-	// Velocidad tiene que ser float
-	float vel = MIN_VEL_STEPS_PER_SECOND;
+	// Seteo la velocidad máxima dependiendo de las distancia y la
+	// aceleracón que se seteo. Si la aceleración es baja y las distancias
+	// cortas no se podrá ir a la velocidad máxima
+	set_up_velocity(get_updated_position(),
+			get_max_target_steps(),
+			get_drive_delta(),
+			get_step_dir());
 
-	const step_count_t initPos = get_updated_position();
-	const step_count_t max_new_steps = get_max_target_steps();
-	const int32_t max_delta = get_drive_delta();
-	const int8_t xxs = get_step_dir();
-
-
-	// TODO MODULARIZAR EL MANEJOR DE LA ACELERACIOn
-	//CALCULOS ACELERACION
-	uint32_t stepsToMaxVel = pow2(motion_config.vel_max)/(2*motion_config.accel);
-
-	if(max_delta < 2*stepsToMaxVel) {
-		// Hay que bajar la velocidad porque la distancia es corta
-		// La nueva máxima velocidad será la cantidad de pasos
-		// por la aceleración
-		motion_config.vel_max = sqrt(max_delta*motion_config.accel);
-		stepsToMaxVel = pow2(motion_config.vel_max)/(2*motion_config.accel);
-	}
-
-	if(xxs > 0) {
-		motion_config.crop_step_accel = initPos + stepsToMaxVel;
-		motion_config.crop_step_deaccel = max_new_steps - stepsToMaxVel;
-	} else {
-		motion_config.crop_step_accel = initPos - stepsToMaxVel;
-		motion_config.crop_step_deaccel = max_new_steps + stepsToMaxVel;
-	}
-	//FIN CALCULOS ACELERACION
-
-	pos = initPos;
+	pos = init_pos;
 	while(pos != max_new_steps) {
 		// STEP 1: Correr un ciclo de interpolacion y mover los motores
 		interpolation_run_cycle();
 		// STEP 2: Calcular la velocidad teniendo en cuenta la aceleración
-		updateVelocity(pos, &vel, motion_config, xxs);
+		//updateVelocity(pos, &vel, motion_config, xxs);
+		updateVelocity(pos, &vel, motion_config);
 		// STEP 3: Poner un delay para manejar la velocidad de giro
 		vTaskDelay(pdMS_TO_TICKS(my_abs(1000/vel)));
 		// STEP4: Actualizar la posición
@@ -242,13 +281,19 @@ void line_move(float newx, float newy, float newz)
 }
 
 // TODO: ACELERACION
+// No es tan facil meter aceleración en el movimiento rápido
+// A menos que mueva un eje a la vez. Me parece que en el movimeinto rápido lo
+// único que puedo hacer es moverme a una velocidad relativamente baja. Por que
+// al no haber aceleración muy probablemente pierda pasos. VER
 void fast_move(float newx, float newy, float newz)
 {
+	step_count_t pos;
+	float vel = MIN_VEL_STEPS_PER_SECOND;
 	int32_t delta_x, delta_y, delta_z;
 	uint8_t dir_x, dir_y, dir_z;
-	int32_t new_stepx = newx * STEPS_PER_MM;
-	int32_t new_stepy = newy * STEPS_PER_MM;
-	int32_t new_stepz = newz * STEPS_PER_MM;
+	const int32_t new_stepx = newx * STEPS_PER_MM;
+	const int32_t new_stepy = newy * STEPS_PER_MM;
+	const int32_t new_stepz = newz * STEPS_PER_MM;
 
 	delta_x = new_stepx - position_get_x();
 	delta_y = new_stepy - position_get_y();
@@ -258,18 +303,47 @@ void fast_move(float newx, float newy, float newz)
 	dir_y = my_direc(delta_y);
 	dir_z = my_direc(delta_z);
 
-	int8_t xs = (delta_x == 0) ? 0 : ((delta_x > 0) ? 1 : -1);
-	int8_t ys = (delta_y == 0) ? 0 : ((delta_y > 0) ? 1 : -1);
-	int8_t zs = (delta_z == 0) ? 0 : ((delta_z > 0) ? 1 : -1);
+	const int8_t xs = (delta_x == 0) ? 0 : ((delta_x > 0) ? 1 : -1);
+	const int8_t ys = (delta_y == 0) ? 0 : ((delta_y > 0) ? 1 : -1);
+	const int8_t zs = (delta_z == 0) ? 0 : ((delta_z > 0) ? 1 : -1);
+
+	delta_x = my_abs(delta_x);
+	delta_y = my_abs(delta_y);
+	delta_z = my_abs(delta_z);
+
+	// Tengo que agarrar el MOVIMIENTO minimo
+	// si delta_XXX == 0 -> No hay movimiento
+	if(delta_x >= delta_y && delta_x >= delta_z) {
+		set_up_velocity(position_get_x(),
+				new_stepx,
+				delta_x,
+				xs);
+		motion_config.pos = position_get_x;
+	}
+
+	if(delta_y >= delta_x && delta_y >= delta_z) {
+		set_up_velocity(position_get_y(),
+				new_stepy,
+				delta_y,
+				ys);
+		motion_config.pos = position_get_y;
+	}
+
+	if(delta_z >= delta_y && delta_z >= delta_x) {
+		set_up_velocity(position_get_z(),
+				new_stepz,
+				delta_z,
+				zs);
+		motion_config.pos = position_get_z;
+	}
 
 	bool_t xStop = false;
 	bool_t yStop = false;
 	bool_t zStop = false;
 
-	speed_t delay = gcode_block_get_speed();
+	pos = motion_config.pos();
 
 	while(!xStop || !yStop || !zStop) {
-
 		if(position_get_x() != new_stepx) {
 			position_x_increment(xs);
 			motor_x_move(dir_x);
@@ -284,7 +358,9 @@ void fast_move(float newx, float newy, float newz)
 			position_z_increment(zs);
 			motor_z_move(dir_z);
 		} else {zStop = true;}
-		vTaskDelay(delay);
+		updateVelocity(pos, &vel, motion_config);
+		vTaskDelay(1000/vel);
+		pos = motion_config.pos();
 	}
 }
 

@@ -15,6 +15,11 @@ typedef struct {
 // con el calculo del moviminento con aceleración
 static motion_t motion_config;
 
+/*
+ * Prototipos funciones privadas
+ * =============================
+ */
+
 /**
 * @brief Funcion que devuelve el máximo entre 3 parametros x, y z
 * @param x son los pasos que hay que hacer en x
@@ -53,6 +58,10 @@ static uint32_t pow2(int32_t x);
 static void updateVelocity(const float pos, float *vel, const motion_t m, int8_t ss);
 
 
+/*
+ * Implementación de funciones privadas
+ * ====================================
+ */
 
 static float max(float x, float y, float z)
 {
@@ -113,6 +122,10 @@ static void updateVelocity(const float pos, float *vel, const motion_t m, int8_t
 }
 
 
+/*
+ * Implementación de funciones púbicas
+ * ===================================
+ */
 void moveMotorsTask(void *param)
 {
 	// variable de configuracion obtenida de la cola

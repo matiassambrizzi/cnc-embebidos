@@ -1,15 +1,26 @@
 #include "interpolation.h"
 
-// Prototipo de funciones privadas
+/*
+ * Prototipos funciones privadas
+ * =============================
+ */
 static void run_bersenham_interpolation();
 static void set_x_is_driving();
 static void set_y_is_driving();
 static void set_z_is_driving();
 
+/*
+ * Alias puntero a función
+ * =======================
+ */
 typedef void (*move_motor)(uint8_t);
 typedef step_count_t (*get_position)(void);
 typedef void (*increment_position)(const int8_t);
 
+/*
+ * Estructura interna
+ * ===================
+*/
 typedef struct {
 	move_motor move;
 	get_position get_pos;
@@ -17,13 +28,16 @@ typedef struct {
 } axis_t;
 
 
-// Variables locales del algoritmo de interpolación
+/*
+ * Variables internas
+ * ==================
+*/
+
+// Decisiones del algoritmo de Bresenham
 static int32_t move_decision_one;
 static int32_t move_decision_two;
 
-// cantidad de pasos que hay que moverse
-// OBS: Con delta se calcula xs y la dirección de giro
-// despues ver de tomar valor absoluto
+// cantidad de pasos que hay que moverse por cada eje
 static int32_t delta_drive_axis;
 static int32_t delta_second_axis;
 static int32_t delta_third_axis;
@@ -41,10 +55,17 @@ static uint8_t motor_drive_dir;
 static uint8_t motor_second_dir;
 static uint8_t motor_third_dir;
 
-// Default value
+// Eje que da mas pasos
 static max_axis_t max_axis = X_AXIS;
 
 static step_count_t max_target_pos;
+
+
+
+/*
+ * Implementación de funciones privadas
+ * ====================================
+ */
 
 static int32_t my_abs(int32_t t)
 {
@@ -78,34 +99,6 @@ static int32_t update_step_direction(const int32_t delta)
 	return (delta == 0) ? 0 : ((delta > 0) ? 1 : -1);
 }
 
-void interpolation_init()
-{
-	//hacer una funcion static
-	//bresenham_init_agorithm
-	move_decision_one = (delta_second_axis << 1) - delta_drive_axis;
-	move_decision_two = (delta_third_axis << 1) - delta_drive_axis;
-
-	// Esto euivale al xs ys zs
-	drive_step = update_step_direction(delta_drive_axis);
-	second_step = update_step_direction(delta_second_axis);
-	third_step = update_step_direction(delta_third_axis);
-
-	motor_drive_dir = my_direc(drive_step);
-	motor_second_dir = my_direc(second_step);
-	motor_third_dir = my_direc(third_step);
-
-	// Luego de setear las direcciones guardo el valor absoluto
-	// del delta
-	delta_drive_axis = my_abs(delta_drive_axis);
-	delta_second_axis = my_abs(delta_second_axis);
-	delta_third_axis = my_abs(delta_third_axis);
-}
-
-
-void interpolation_run_cycle()
-{
-	run_bersenham_interpolation();
-}
 
 static void run_bersenham_interpolation()
 {
@@ -131,45 +124,6 @@ static void run_bersenham_interpolation()
 	// Update decision
 	move_decision_one += (delta_second_axis<<1);
 	move_decision_two += (delta_third_axis<<1);
-}
-
-
-void interpolation_set_deltas(int32_t new_stepx,
-			      int32_t new_stepy,
-			      int32_t new_stepz)
-{
-	int32_t delta_x = new_stepx - position_get_x();
-	int32_t delta_y = new_stepy - position_get_y();
-	int32_t delta_z = new_stepz - position_get_z();
-
-	set_max_axis(my_abs(delta_x), my_abs(delta_y), my_abs(delta_z));
-
-	switch (max_axis) {
-	case X_AXIS:
-		delta_drive_axis = delta_x;
-		delta_second_axis = delta_y;
-		delta_third_axis = delta_z;
-		set_x_is_driving();
-		max_target_pos = new_stepx;
-		break;
-	case Y_AXIS:
-		delta_drive_axis = delta_y;
-		delta_second_axis = delta_x;
-		delta_third_axis = delta_z;
-		set_y_is_driving();
-		max_target_pos = new_stepy;
-		break;
-	case Z_AXIS:
-		delta_drive_axis = delta_z;
-		delta_second_axis = delta_y;
-		delta_third_axis = delta_x;
-		set_z_is_driving();
-		max_target_pos = new_stepz;
-		break;
-	default:
-		;
-	}
-
 }
 
 static void set_x_is_driving()
@@ -218,6 +172,81 @@ static void set_z_is_driving()
 	third.inc_pos = position_x_increment;
 	third.move = motor_x_move;
 }
+
+/*
+ * Implementación de funciones públicas
+ * ====================================
+ */
+
+void interpolation_init()
+{
+	//hacer una funcion static
+	//bresenham_init_agorithm
+	move_decision_one = (delta_second_axis << 1) - delta_drive_axis;
+	move_decision_two = (delta_third_axis << 1) - delta_drive_axis;
+
+	// Esto euivale al xs ys zs
+	drive_step = update_step_direction(delta_drive_axis);
+	second_step = update_step_direction(delta_second_axis);
+	third_step = update_step_direction(delta_third_axis);
+
+	motor_drive_dir = my_direc(drive_step);
+	motor_second_dir = my_direc(second_step);
+	motor_third_dir = my_direc(third_step);
+
+	// Luego de setear las direcciones guardo el valor absoluto
+	// del delta
+	delta_drive_axis = my_abs(delta_drive_axis);
+	delta_second_axis = my_abs(delta_second_axis);
+	delta_third_axis = my_abs(delta_third_axis);
+}
+
+
+void interpolation_run_cycle()
+{
+	run_bersenham_interpolation();
+}
+
+
+
+void interpolation_set_deltas(int32_t new_stepx,
+			      int32_t new_stepy,
+			      int32_t new_stepz)
+{
+	int32_t delta_x = new_stepx - position_get_x();
+	int32_t delta_y = new_stepy - position_get_y();
+	int32_t delta_z = new_stepz - position_get_z();
+
+	set_max_axis(my_abs(delta_x), my_abs(delta_y), my_abs(delta_z));
+
+	switch (max_axis) {
+	case X_AXIS:
+		delta_drive_axis = delta_x;
+		delta_second_axis = delta_y;
+		delta_third_axis = delta_z;
+		set_x_is_driving();
+		max_target_pos = new_stepx;
+		break;
+	case Y_AXIS:
+		delta_drive_axis = delta_y;
+		delta_second_axis = delta_x;
+		delta_third_axis = delta_z;
+		set_y_is_driving();
+		max_target_pos = new_stepy;
+		break;
+	case Z_AXIS:
+		delta_drive_axis = delta_z;
+		delta_second_axis = delta_y;
+		delta_third_axis = delta_x;
+		set_z_is_driving();
+		max_target_pos = new_stepz;
+		break;
+	default:
+		;
+	}
+
+}
+
 
 
 

@@ -6,7 +6,7 @@
 #include "types.h"
 #include "config.h"
 
-
+// TODO: Esto no se usa
 #define speed_t			TickType_t
 
 typedef struct g_block_t {
@@ -59,11 +59,17 @@ void gcode_block_set_movment(const movment_type_t m);
 // TODO : DOC
 speed_t gcode_block_get_speed();
 movment_type_t gcode_block_get_movement();
+
+/**
+* @brief Funcion que devuelve la posición a la que se quiere llegar. Esta
+* posicion se recibio por puerto serie
+* @return target position
+*/
 position_t * gcode_block_get_position();
 
 
-position_t get_target_position();
-void get_target_speed();
+//position_t get_target_position();
+//void get_target_speed();
 
 
 

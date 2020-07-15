@@ -1,7 +1,20 @@
 #include "process_line.h"
 
 
-//Make this static
+/*
+ * Prototipos funciones privadas
+ * =============================
+ */
+static bool_t isNumber(const uint8_t c);
+static bool_t isLetter(const uint8_t c);
+
+
+
+
+/*
+ * Implementación de funciones privadas
+ * ====================================
+ */
 static bool_t isLetter(const uint8_t c)
 {
 	return (c >= 'A' && c <= 'Z');
@@ -12,6 +25,10 @@ static bool_t isNumber(const uint8_t c)
 	return (c >= '0' && c<= '9');
 }
 
+/*
+ * Implementación de funciones públicas
+ * ====================================
+ */
 void processGcodeLineTask(void *parameters)
 {
 

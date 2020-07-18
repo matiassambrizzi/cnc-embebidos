@@ -13,6 +13,7 @@ typedef struct g_block_t {
 	position_t target_pos;
 	measurement_units_t units;
 	speed_t speed; // TODO: Esto es un porcentaje (0~100) de la máxima velocidad se pasa con el comando F
+	// Mejor que sea float?
 	uint32_t velocity; // Velocidad en steps/sec
 	movment_type_t type;
 	bool_t pause;

@@ -21,3 +21,11 @@ UPDATED
 que lea la variable gcode.pause y se fije si es verdadera. Si es verdadera entones 
 este timer no tiene que dar el semaforo de movimiento habilitado. Si es falsa da
 el semáforo. Hay que ver que prioridad y con que tiempo se ejecuta a esta tarea
+
+2. Otra tarea puede ser la que envía el carácter que hay espacio en la cola de recepción.
+Esta puede ser un timer que envía el caracter si hay espacio ? si se le da un semáforo ? 
+Notificaciones ?
+
+3. Un semáforo hay que darlo y una tarea lo toma. Cuando lo toma no hay que darlo nuevamente. Hay que esperar que
+la tarea que sincorniza de el semáforo
+

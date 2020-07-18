@@ -14,3 +14,10 @@ UPDATED TODO
 1. Agregar algunos comandos
 
 
+UPDATED
+-------
+
+1. Ver como hacer para pausar el programa: Una opcion es hacer una tarea periodica 
+que lea la variable gcode.pause y se fije si es verdadera. Si es verdadera entones 
+este timer no tiene que dar el semaforo de movimiento habilitado. Si es falsa da
+el semáforo. Hay que ver que prioridad y con que tiempo se ejecuta a esta tarea

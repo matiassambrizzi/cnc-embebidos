@@ -19,6 +19,7 @@ void gcode_block_reset()
 	rx_gcode.speed = speed_to_ticks(90);
 	rx_gcode.velocity = MAX_VEL_STEPS_PER_SECOND * 0.9;
 	rx_gcode.units = MILLIMETERS;
+	rx_gcode.pause = false;
 }
 
 
@@ -41,6 +42,9 @@ void gcode_block_set_z(const float z)
 void gcode_block_set_speed(const float s)
 {
 //	s es un valor porcentual
+	if(s <= 20 || s > 100) {
+		return;
+	}
 	const float aux = s / 100.0;
 	rx_gcode.velocity = MAX_VEL_STEPS_PER_SECOND * aux;
 }
@@ -70,5 +74,16 @@ position_t * gcode_block_get_position()
 gBlockPtr gcode_get_block()
 {
 	return (gBlockPtr) (&(rx_gcode));
+}
+
+
+bool_t gcode_get_pause()
+{
+	return rx_gcode.pause;
+}
+
+void gcode_set_pause(const bool_t p)
+{
+	rx_gcode.pause = p;
 }
 

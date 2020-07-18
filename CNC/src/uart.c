@@ -56,8 +56,14 @@ void uartProcessRxEventTask(void * taskParamPrt)
 			while(uartRxReady(UART_PORT)) {
 				//Si estoy aca es por que quedan datos
 				//en el fifo del uart
+				if(i >= MAX_RX_BUFFER) {
+					// Reset the buffer
+					i = 0;
+				}
+
 				if((rx_char = uartRxRead(UART_PORT)) != ' ') {
-					if((rx_line[i] = rx_char) == '\n' || i > MAX_RX_BUFFER){
+					//Agregar /r/n?
+					if((rx_line[i] = rx_char) == '\n'){
 						rx_line[i] = '\0';
 						i = 0;
 						// Aviso que se leyó una linea

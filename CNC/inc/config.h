@@ -4,6 +4,9 @@
  * Poner toda las configuraciones del usuario aca
 */
 
+
+#define DEBUG
+
 /*
  * Paso por vuelta, esta variable dependerá de cada motor
  * en este caso estoy usando un motor que vanaza 1.8° por
@@ -52,6 +55,7 @@
 */
 #define COM_BAUDRATE			(115200)
 #define UART_PORT			(UART_USB)
+//#define UART_PORT			(UART_232)
 
 
 //TODO: Definir los pines de los endstops

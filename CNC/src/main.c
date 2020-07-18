@@ -4,6 +4,7 @@
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "queue.h"
+#include "supporting_functions.h"
 #include "task.h"
 
 #include "sapi.h"
@@ -21,6 +22,7 @@ extern TaskHandle_t xHandleProcessLine;
 extern QueueHandle_t xPointsQueue;
 extern TaskHandle_t xHandleUART;
 extern TaskHandle_t xHandleUART;
+extern xSemaphoreHandle xSemaphore;
 
 int main(void)
 {
@@ -35,29 +37,33 @@ int main(void)
 	motion_reset();
 
 	xPointsQueue = xQueueCreate(15, sizeof(g_block_t));
+	xSemaphore = xSemaphoreCreateBinary();
 
-	xTaskCreate(uartProcessRxEventTask,
-		    (const char*)"MyTaskUart",
-		    configMINIMAL_STACK_SIZE*2,
-		    NULL, //PARAMETROS
-		    tskIDLE_PRIORITY+1,
-		    &xHandleUART);
+	if(xPointsQueue != NULL && xSemaphore != NULL) {
 
-	xTaskCreate(processGcodeLineTask,
-		    (const char*)"MytaskPrint",
-		    configMINIMAL_STACK_SIZE*2,
-		    NULL,
-		    tskIDLE_PRIORITY+2,
-		    &xHandleProcessLine);
+		xTaskCreate(uartProcessRxEventTask,
+			    (const char*)"MyTaskUart",
+			    configMINIMAL_STACK_SIZE*2,
+			    NULL, //PARAMETROS
+			    tskIDLE_PRIORITY+1,
+			    &xHandleUART);
 
-	xTaskCreate(moveMotorsTask,
-		    (const char*)"moveMotorsTask",
-		    configMINIMAL_STACK_SIZE*4,
-		    NULL,
-		    tskIDLE_PRIORITY+3,
-		    NULL);
+		xTaskCreate(processGcodeLineTask,
+			    (const char*)"MytaskPrint",
+			    configMINIMAL_STACK_SIZE*2,
+			    NULL,
+			    tskIDLE_PRIORITY+2,
+			    &xHandleProcessLine);
 
-	vTaskStartScheduler();
+		xTaskCreate(moveMotorsTask,
+			    (const char*)"moveMotorsTask",
+			    configMINIMAL_STACK_SIZE*4,
+			    NULL,
+			    tskIDLE_PRIORITY+3,
+			    NULL);
+
+		vTaskStartScheduler();
+	}
 
 	while(1) { }
 

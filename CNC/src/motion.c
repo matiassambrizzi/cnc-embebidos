@@ -6,6 +6,7 @@
  * ===============
  */
 QueueHandle_t xPointsQueue;
+SemaphoreHandle_t xSemaphore;
 
 /*
  * Estructura interna
@@ -192,6 +193,9 @@ void moveMotorsTask(void *param)
 	g_block_t gblock;
 
 	while(1) {
+
+	// Try to take the movement semaphore
+	if((xSemaphoreTake(xSemaphore, portMAX_DELAY)) == pdTRUE) {
 		//xQueueReceive(xPointsQueue, &move, portMAX_DELAY);
 		xQueueReceive(xPointsQueue, &gblock, portMAX_DELAY);
 
@@ -220,6 +224,9 @@ void moveMotorsTask(void *param)
 			default:
 				;
 		}
+		// Vuelvo a dar el semaforo
+		//xSemaphoreGive(xSemaphore);
+	}
 	}
 }
 
@@ -237,6 +244,8 @@ void motion_set_accel(const uint32_t accel)
 {
 	if(accel > MAX_ACCEL_STEPS_PER_SECOND_SQUARE) {
 		motion_config.accel = MAX_ACCEL_STEPS_PER_SECOND_SQUARE;
+	} else if(accel < 20){
+		motion_config.accel = 20;
 	} else {
 		motion_config.accel = accel;
 	}

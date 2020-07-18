@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include "FreeRTOS.h"
+#include "semphr.h"
 #include "task.h"
 #include "queue.h"
 #include "motors.h"

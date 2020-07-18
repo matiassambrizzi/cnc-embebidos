@@ -15,6 +15,7 @@ typedef struct g_block_t {
 	speed_t speed; // TODO: Esto es un porcentaje (0~100) de la máxima velocidad se pasa con el comando F
 	uint32_t velocity; // Velocidad en steps/sec
 	movment_type_t type;
+	bool_t pause;
 } g_block_t;
 
 typedef struct g_block_t * gBlockPtr;
@@ -72,5 +73,8 @@ position_t * gcode_block_get_position();
 //void get_target_speed();
 
 
+bool_t gcode_get_pause();
+
+void gcode_set_pause(const bool_t p);
 
 #endif

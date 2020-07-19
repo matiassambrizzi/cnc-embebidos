@@ -103,6 +103,10 @@ void test_my_string_to_float(void)
 	number = stringToFloat(s);
 	TEST_ASSERT_EQUAL_FLOAT(-0.1,
 				number);
+	strcpy(s, "1,3");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(1,
+				number);
 }
 
 

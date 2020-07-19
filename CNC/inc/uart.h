@@ -46,7 +46,6 @@ void ready_to_process(void);
 */
 int8_t uart_get_buffer(char *s);
 
-
 /**
 * @brief Funcion para guarar caracteres que están almacenados en el fifo del
 * uart en la variables global rx_line.

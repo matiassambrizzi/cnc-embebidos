@@ -45,7 +45,7 @@ float stringToFloat(char *str)
 	}
 	// Parte entera
 	while(aux != '.' && aux != '\0') {
-		if(isLetter(aux)) {
+		if(!isNumber(aux)) {
 			// st = is_letter;
 			//return IS_LETTER;
 			break;
@@ -58,7 +58,7 @@ float stringToFloat(char *str)
 	if(aux == '.') {
 		i++;
 		aux = str[i];
-		while(aux != '\0' && !isLetter(aux)) {
+		while(aux != '\0' && isNumber(aux)) {
 			result = result + base*(float)(aux-'0');
 			base /= 10;
 			i++;
@@ -304,37 +304,13 @@ void processGcodeLineTask(void *parameters)
 int read_number(char *rxLine, uint8_t *counter, float *number)
 {
 	char *iterator = rxLine + *counter;
-	//char *aux;
 	uint8_t i = 0;
 
 	i++;
-	// TODO: Si iterator+i no es un número atof() devuelve 0
-	// No es seguro.. Hay que fijarse si es un numero de otra forma devolver
-	// error
-	/*
-	if(*(iterator+i) < '0' || *(iterator+i) > '9') {
-		//Error nan;
-		return -1;
-	}
-	*/
-	//atof is secure ?
-	// TODO: STRTOF: Cuando le mando 0.1 a 0.9 me lo reconoce como 0 a menos
-	// que el agregegue el signo WTF??
-	//if(*(iterator+i) >= '0'  && *(iterator+i) <= 9) {
-	// Hay que chequear si hay una E despues
-		//setlocale(LC_ALL|~LC_NUMERIC, "");
-		//*number = strtod(iterator+i, &aux);
-		*number = stringToFloat(iterator+i);
-		//*number = atof(iterator+i);
-		//if(aux == NULL) {
-		//	return -1;
-		//}
-	//}
-	//else { *number = 0;  }
-
+	// If iterator+i is letter -> the function returns 0
+	// TODO: Status_t
+	*number = stringToFloat(iterator+i);
 	while(!isLetter(*(iterator+i)) && *(iterator+i) != '\0') { i++;}
-	//update the counter to the next letter
-	//or to the end of the string
 	*counter += i;
 
 	//All good

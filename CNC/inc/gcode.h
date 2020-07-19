@@ -1,7 +1,15 @@
 #ifndef _GCODE_BLOCK__H
 #define _GCODE_BLOCK__H
 
+#ifndef TEST_ALL
 #include "FreeRTOS.h"
+#endif
+
+#ifdef TEST_ALL
+#include "test_utils.h"
+#include <stdint.h>
+#endif
+
 #include "position.h"
 #include "types.h"
 #include "config.h"

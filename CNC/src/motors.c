@@ -1,23 +1,48 @@
 #include "motors.h"
 
-//Estructura privada
+/*
+ * Estructura interna
+ * ==================
+ */
+
 typedef struct {
 	uint8_t step_pin;
 	uint8_t dir_pin;
 	uint8_t end_stop_pin;
 } motor_t;
 
-// Instancias privadas de los motores
-// Estas solo se podrán acceder con funciones de la API
+/*
+ * Variables internas
+ * ==================
+ */
+
 static motor_t x_motor;
 static motor_t y_motor;
 static motor_t z_motor;
+
+/*
+ * Prototipos funciones privadas
+ * =============================
+ */
+
+// TODO
+
+
+/*
+ * Implementación de funciones privadas
+ * ====================================
+ */
 
 static void onestep(motor_t m)
 {
 	gpioWrite(m.step_pin, true);
 	gpioWrite(m.step_pin, false);
 }
+
+/*
+ * Implementación de funciones púbicas
+ * ===================================
+ */
 
 void motorInit()
 {

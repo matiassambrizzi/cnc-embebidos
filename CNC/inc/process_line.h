@@ -4,16 +4,24 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <locale.h>
+#include "config.h"
+#include "uart.h"
+#include "types.h"
+#include "position.h"
+#include "gcode.h"
+#include "motion.h"
+
 
 #ifndef TEST_ALL
 #include "FreeRTOS.h"
-#include "gcode.h"
 #include "sapi.h"
 #include "task.h"
 #include "queue.h"
-#include "config.h"
-#include "uart.h"
-#include "motion.h"
+#endif
+
+#ifdef TEST_ALL
+#include "test_utils.h"
 #endif
 
 extern char rx_line[MAX_RX_BUFFER];
@@ -30,5 +38,6 @@ void processGcodeLineTask(void *parameters);
 
 int read_number(char *rxLine, uint8_t *counter, float *number);
 
+float stringToFloat(char *);
 
 #endif

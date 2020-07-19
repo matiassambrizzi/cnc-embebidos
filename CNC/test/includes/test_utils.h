@@ -1,8 +1,10 @@
 #ifndef _TEST_UTILS__H_
 #define _TEST_UTILS__H_
 
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "config.h"
 
 #define uartConfig uartInit
 
@@ -10,16 +12,20 @@
 #define false 0
 //#define NULL 0
 
+
+extern char rx_line[MAX_RX_BUFFER];
+
 typedef int TaskHandle_t;
+typedef int SemaphoreHandle_t;
+typedef int QueueHandle_t;
 typedef int TickType_t;
 typedef long BaseType_t;
 //typedef unsigned int uint8_t;
 //typedef int int8_t;
 typedef unsigned int uint32_t;
-
 #define pdFALSE false
 #define pdTRUE	true
-
+#define portMAX_DELAY  ((TickType_t) 10000)
 typedef enum {
 	   UART_GPIO = 0, // Hardware UART0 via GPIO1(TX), GPIO2(RX) pins on header P0
 	   UART_485  = 1, // Hardware UART0 via RS_485 A, B and GND Borns
@@ -46,6 +52,7 @@ uint32_t ulTaskNotifyTake(BaseType_t, TickType_t);
 bool_t uartRxReady( uartMap_t uart );
 uint8_t uartRxRead( uartMap_t uart );
 void uartWriteByte( uartMap_t uart, const uint8_t value );
+void uartWriteString( uartMap_t uart, const char* str );
 void xTaskNotifyGive(TaskHandle_t);
 void vTaskNotifyGiveFromISR(TaskHandle_t, BaseType_t *);
 void portYIELD_FROM_ISR(BaseType_t);
@@ -90,6 +97,26 @@ bool_t gpioRead( gpioMap_t pin );
 bool_t gpioInit( gpioMap_t pin, gpioInit_t config );
 
 
+
+/*=========================[QUEUES]===============================*/
+
+
+void xQueueSend(QueueHandle_t, void *, TickType_t);
+void xQueueReceive(QueueHandle_t xQueue, void *const pvBuffer, TickType_t xTicksToWait);
+void vPrintString(const char *);
+void xQueueReset(QueueHandle_t);
+
+BaseType_t uxQueueSpacesAvailable(const QueueHandle_t xQueue);
+
+double sqrt(double __x);
+
+
+void vTaskDelay(TickType_t);
+
+
+
+char rx_line[MAX_RX_BUFFER];
+QueueHandle_t xPointsQueue;
 
 
 #endif

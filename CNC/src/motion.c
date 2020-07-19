@@ -6,7 +6,7 @@
  * ===============
  */
 QueueHandle_t xPointsQueue;
-SemaphoreHandle_t xSemaphore;
+//SemaphoreHandle_t xSemaphore;
 
 /*
  * Estructura interna
@@ -184,19 +184,18 @@ static void set_up_velocity(step_count_t initPos,
 
 
 }
+
 /*
  * Implementación de funciones púbicas
  * ===================================
  */
+
 void moveMotorsTask(void *param)
 {
 	g_block_t gblock;
 
 	while(1) {
 
-	// Try to take the movement semaphore
-	//if((xSemaphoreTake(xSemaphore, portMAX_DELAY)) == pdTRUE) {
-		//xQueueReceive(xPointsQueue, &move, portMAX_DELAY);
 		xQueueReceive(xPointsQueue, &gblock, portMAX_DELAY);
 
 		motion_config.vel_max = gblock.velocity;
@@ -224,9 +223,6 @@ void moveMotorsTask(void *param)
 			default:
 				;
 		}
-		// Vuelvo a dar el semaforo
-		//xSemaphoreGive(xSemaphore);
-//	}
 	}
 }
 
@@ -277,6 +273,9 @@ void line_move(float newx, float newy, float newz)
 	pos = init_pos;
 	while(pos != max_new_steps) {
 		// STEP 1: Correr un ciclo de interpolacion y mover los motores
+		// Puedo hacer la pausa aca porque
+		// todas las cuentas las hago en un módulo separado
+		if(gcode_get_pause() != true) {
 		interpolation_run_cycle();
 		// STEP 2: Calcular la velocidad teniendo en cuenta la aceleración
 		//updateVelocity(pos, &vel, motion_config, xxs);
@@ -285,6 +284,7 @@ void line_move(float newx, float newy, float newz)
 		vTaskDelay(pdMS_TO_TICKS(my_abs(1000/vel)));
 		// STEP4: Actualizar la posición
 		pos = get_updated_position();
+		} else {vTaskDelay(pdMS_TO_TICKS(500));}
 	}
 
 }

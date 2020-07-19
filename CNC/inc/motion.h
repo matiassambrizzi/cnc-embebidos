@@ -1,17 +1,24 @@
 #ifndef _MOTION__H_
 #define _MOTION__H_
 
-#include <math.h>
+#ifndef TEST_ALL
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "task.h"
 #include "queue.h"
+#endif
+
+#include <math.h>
 #include "motors.h"
 #include "gcode.h"
 #include "position.h"
 #include "uart.h"
 #include "types.h"
 #include "interpolation.h"
+
+#ifdef TEST_ALL
+#include "test_utils.h"
+#endif
 
 /**
 * @brief Resetear los parametros del movimiento

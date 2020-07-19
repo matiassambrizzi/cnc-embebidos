@@ -8,7 +8,6 @@ extern SemaphoreHandle_t xSemaphore;
  */
 static bool_t isNumber(const uint8_t c);
 static bool_t isLetter(const uint8_t c);
-
 /*
  * Implementación de funciones privadas
  * ====================================
@@ -22,6 +21,29 @@ static bool_t isNumber(const uint8_t c)
 {
 	return (c >= '0' && c<= '9');
 }
+
+
+float stringToFloat(char *str)
+{
+	uint32_t i = 0;
+	float ten = 1;
+	char aux;
+	float result = 0;
+
+	aux = str[i];
+	while(!isLetter(aux) && aux != '\0') {
+		if(aux != '.') {
+			result += aux - '0';
+			result *= 10;
+		}
+		i++;
+		aux = str[i];
+	}
+
+
+	return result;
+}
+
 
 /*
  * Implementación de funciones públicas
@@ -81,6 +103,7 @@ void processGcodeLineTask(void *parameters)
 					uartWriteString(UART_PORT, "Descarto valor");
 					letter = 'D';
 				}
+				printf("Number is: %d\n",(int) number);
 
 				int_val = (uint8_t) number;
 
@@ -185,12 +208,15 @@ void processGcodeLineTask(void *parameters)
 						motion_set_accel(number);
 						break;
 					case '$':
+						printf("X: %d, ", position_get_x() / 200);
+						printf("Y: %d, ", position_get_y() / 200);
+						printf("Z: %d\r\n", position_get_z() / 200);
 						// Imprimir la configuración
 						// actual
 						break;
 					default:
 #ifdef DEBUG
-						printf("Default Command", (int32_t) number);
+						printf("Default Command");
 #endif
 						;
 					}
@@ -214,7 +240,7 @@ void processGcodeLineTask(void *parameters)
 			// tiempo y se fije si se quiere hacer una pausa.
 			// TODO: ESTO NO FUNCIONA
 			 if(gcode_get_pause() != true) {
-				xSemaphoreGive(xSemaphore);
+				//xSemaphoreGive(xSemaphore);
 			 }
 			// Me fijo si el comando corresponde con un movimiento
 			// si esto es verdad esntones pongo el bloque en la cola
@@ -263,6 +289,8 @@ int read_number(char *rxLine, uint8_t *counter, float *number)
 	// TODO: STRTOF: Cuando le mando 0.1 a 0.9 me lo reconoce como 0 a menos
 	// que el agregegue el signo WTF??
 	//if(*(iterator+i) >= '0'  && *(iterator+i) <= 9) {
+	// Hay que chequear si hay una E despues
+		setlocale(LC_ALL|~LC_NUMERIC, "");
 		*number = strtod(iterator+i, &aux);
 		//*number = atof(iterator+i);
 		if(aux == NULL) {

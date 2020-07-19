@@ -71,7 +71,7 @@
 /**
 * Maxima cantidad de caracters que se almacenana en el buffer de rx uart
 */
-#define MAX_RX_BUFFER			(15)
+#define MAX_RX_BUFFER			(80)
 
 #define	READY_TO_PROCESS_CHAR		('$')
 

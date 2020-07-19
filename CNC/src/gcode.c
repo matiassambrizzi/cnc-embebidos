@@ -1,13 +1,36 @@
 #include "gcode.h"
 
-// Instancia Privada de codigoG recibido por UART
+/*
+ * Variables internas
+ * ==================
+ */
+
 static g_block_t rx_gcode;
+
+/*
+ * Prototipos funciones privadas
+ * =============================
+ */
+
+// Empty
+
+
+
+/*
+ * Implementación de funciones privadas
+ * ====================================
+ */
 
 // TODO: Ver esta función
 static TickType_t speed_to_ticks(uint8_t s)
 {
 	return pdMS_TO_TICKS(101-s%101);
 }
+
+/*
+ * Implementación de funciones púbicas
+ * ===================================
+ */
 
 void gcode_block_reset()
 {

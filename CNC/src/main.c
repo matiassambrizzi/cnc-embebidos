@@ -22,7 +22,7 @@ extern TaskHandle_t xHandleProcessLine;
 extern QueueHandle_t xPointsQueue;
 extern TaskHandle_t xHandleUART;
 extern TaskHandle_t xHandleUART;
-extern xSemaphoreHandle xSemaphore;
+//extern xSemaphoreHandle xSemaphore;
 
 int main(void)
 {
@@ -37,9 +37,9 @@ int main(void)
 	motion_reset();
 
 	xPointsQueue = xQueueCreate(15, sizeof(g_block_t));
-	xSemaphore = xSemaphoreCreateBinary();
+	//xSemaphore = xSemaphoreCreateBinary();
 
-	if(xPointsQueue != NULL && xSemaphore != NULL) {
+	if(xPointsQueue != NULL) {
 
 		xTaskCreate(uartProcessRxEventTask,
 			    (const char*)"MyTaskUart",

@@ -13,7 +13,6 @@ void tearDown(void)
 
 void test_motors_NeedToImplement(void)
 {
-    TEST_IGNORE_MESSAGE("Need to Implement motors");
 }
 
 

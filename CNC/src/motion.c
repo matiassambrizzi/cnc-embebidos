@@ -193,20 +193,30 @@ static void set_up_velocity(step_count_t initPos,
 void moveMotorsTask(void *param)
 {
 	g_block_t gblock;
-
+	position_t move;
 	while(1) {
 
 		xQueueReceive(xPointsQueue, &gblock, portMAX_DELAY);
 
 		motion_config.vel_max = gblock.velocity;
 		// TODO: actualizar la aceleración aca!
+		//
+		if(gblock.cord == RELATIVE) {
+			move.px = (float)position_get_x()/STEPS_PER_MM + (gblock.target_pos.px);
+			move.py = (float)position_get_y()/STEPS_PER_MM + (gblock.target_pos.py);
+			move.pz = (float)position_get_z()/STEPS_PER_MM + (gblock.target_pos.pz);
+		} else {
+			move.px = gblock.target_pos.px;
+			move.py = gblock.target_pos.py;
+			move.pz = gblock.target_pos.pz;
+		}
 
 		switch (gblock.type) {
 			case LINE:
 				//line_move(move.px, move.py, move.pz);
-				line_move(gblock.target_pos.px,
-					  gblock.target_pos.py,
-					  gblock.target_pos.pz);
+				line_move(move.px,
+					  move.py,
+					  move.pz);
 				break;
 			case FAST_MOVMENT:
 				//fast_move(move.px, move.py, move.pz);

@@ -43,7 +43,7 @@ void test_process_line_readnumber(void)
 */
 void test_my_string_to_float(void)
 {
-	char s[10] = "1";
+	char s[100] = "1";
 	float number;
 
 	number = stringToFloat(s);
@@ -56,6 +56,53 @@ void test_my_string_to_float(void)
 	strcpy(s, "6.4");
 	number = stringToFloat(s);
 	TEST_ASSERT_EQUAL_FLOAT(6.4, number);
+
+	strcpy(s, "7.78");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(7.78, number);
+
+	strcpy(s, "17.78");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(17.78, number);
+
+	strcpy(s, "-1.6");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(-1.6, number);
+
+	strcpy(s, "EE1231231");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(0, number);
+
+	strcpy(s, "1.3E");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(1.3, number);
+
+	strcpy(s, "-1.3E");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(-1.3, number);
+
+	strcpy(s, "+1.3E");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(1.3, number);
+
+	strcpy(s, "");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(0, number);
+
+	strcpy(s, "0.4");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(0.4, number);
+
+
+	strcpy(s, "0.9999999999999999999999999999999999");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(0.9999999999999999999999999999999999,
+				number);
+
+	strcpy(s, "-.1");
+	number = stringToFloat(s);
+	TEST_ASSERT_EQUAL_FLOAT(-0.1,
+				number);
 }
 
 

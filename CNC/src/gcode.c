@@ -43,6 +43,7 @@ void gcode_block_reset()
 	rx_gcode.velocity = MAX_VEL_STEPS_PER_SECOND * 0.9;
 	rx_gcode.units = MILLIMETERS;
 	rx_gcode.pause = false;
+	rx_gcode.cord = ABSOLUTE;
 }
 
 
@@ -109,4 +110,12 @@ void gcode_set_pause(const bool_t p)
 {
 	rx_gcode.pause = p;
 }
+
+
+void gcode_set_coordinates(const coordinates_t cord)
+{
+	rx_gcode.cord = cord;
+}
+
+
 

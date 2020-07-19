@@ -26,20 +26,49 @@ static bool_t isNumber(const uint8_t c)
 float stringToFloat(char *str)
 {
 	uint32_t i = 0;
-	float ten = 1;
 	char aux;
 	float result = 0;
+	float base = 0.1;
+	bool_t neg = false;
 
 	aux = str[i];
-	while(!isLetter(aux) && aux != '\0') {
-		if(aux != '.') {
-			result += aux - '0';
-			result *= 10;
-		}
+
+	// Chequeo de signo
+	if(aux == '-') {
+		neg = true;
 		i++;
 		aux = str[i];
 	}
+	else if(aux == '+') {
+		i++;
+		aux = str[i];
+	}
+	// Parte entera
+	while(aux != '.' && aux != '\0') {
+		if(isLetter(aux)) {
+			// st = is_letter;
+			//return IS_LETTER;
+			break;
+		}
+		result = result*10 + aux - '0';
+		i++;
+		aux = str[i];
+	}
+	// Parte decimal
+	if(aux == '.') {
+		i++;
+		aux = str[i];
+		while(aux != '\0' && !isLetter(aux)) {
+			result = result + base*(float)(aux-'0');
+			base /= 10;
+			i++;
+			aux = str[i];
+		}
+	}
 
+	if(neg == true) {
+		result *= -1;
+	}
 
 	return result;
 }
@@ -149,12 +178,15 @@ void processGcodeLineTask(void *parameters)
 						break;
 					case 90:
 						//Absolute mode
+						gcode_set_coordinates(ABSOLUTE);
 						break;
 					case 91:
+						gcode_set_coordinates(RELATIVE);
 						//Relative Mode
 						break;
 					case 92:
 						//Set this pos as 0,0,0
+						position_reset();
 						break;
 					default:
 						;
@@ -239,9 +271,9 @@ void processGcodeLineTask(void *parameters)
 			// Tengo que hacer una tarea que se ejecute cada algun
 			// tiempo y se fije si se quiere hacer una pausa.
 			// TODO: ESTO NO FUNCIONA
-			 if(gcode_get_pause() != true) {
+			 //if(gcode_get_pause() != true) {
 				//xSemaphoreGive(xSemaphore);
-			 }
+			 //}
 			// Me fijo si el comando corresponde con un movimiento
 			// si esto es verdad esntones pongo el bloque en la cola
 			if(movment) {
@@ -272,7 +304,7 @@ void processGcodeLineTask(void *parameters)
 int read_number(char *rxLine, uint8_t *counter, float *number)
 {
 	char *iterator = rxLine + *counter;
-	char *aux;
+	//char *aux;
 	uint8_t i = 0;
 
 	i++;
@@ -290,12 +322,13 @@ int read_number(char *rxLine, uint8_t *counter, float *number)
 	// que el agregegue el signo WTF??
 	//if(*(iterator+i) >= '0'  && *(iterator+i) <= 9) {
 	// Hay que chequear si hay una E despues
-		setlocale(LC_ALL|~LC_NUMERIC, "");
-		*number = strtod(iterator+i, &aux);
+		//setlocale(LC_ALL|~LC_NUMERIC, "");
+		//*number = strtod(iterator+i, &aux);
+		*number = stringToFloat(iterator+i);
 		//*number = atof(iterator+i);
-		if(aux == NULL) {
-			return -1;
-		}
+		//if(aux == NULL) {
+		//	return -1;
+		//}
 	//}
 	//else { *number = 0;  }
 

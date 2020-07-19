@@ -25,6 +25,7 @@ typedef struct g_block_t {
 	uint32_t velocity; // Velocidad en steps/sec
 	movment_type_t type;
 	bool_t pause;
+	coordinates_t cord;
 } g_block_t;
 
 typedef struct g_block_t * gBlockPtr;
@@ -85,5 +86,5 @@ position_t * gcode_block_get_position();
 bool_t gcode_get_pause();
 
 void gcode_set_pause(const bool_t p);
-
+void gcode_set_coordinates(const coordinates_t cord);
 #endif

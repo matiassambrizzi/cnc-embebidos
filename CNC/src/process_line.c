@@ -9,9 +9,6 @@ extern SemaphoreHandle_t xSemaphore;
 static bool_t isNumber(const uint8_t c);
 static bool_t isLetter(const uint8_t c);
 
-
-
-
 /*
  * Implementación de funciones privadas
  * ====================================
@@ -215,6 +212,7 @@ void processGcodeLineTask(void *parameters)
 			// cuando llega algo por uart.
 			// Tengo que hacer una tarea que se ejecute cada algun
 			// tiempo y se fije si se quiere hacer una pausa.
+			// TODO: ESTO NO FUNCIONA
 			 if(gcode_get_pause() != true) {
 				xSemaphoreGive(xSemaphore);
 			 }

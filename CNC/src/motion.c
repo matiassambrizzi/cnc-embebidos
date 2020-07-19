@@ -195,7 +195,7 @@ void moveMotorsTask(void *param)
 	while(1) {
 
 	// Try to take the movement semaphore
-	if((xSemaphoreTake(xSemaphore, portMAX_DELAY)) == pdTRUE) {
+	//if((xSemaphoreTake(xSemaphore, portMAX_DELAY)) == pdTRUE) {
 		//xQueueReceive(xPointsQueue, &move, portMAX_DELAY);
 		xQueueReceive(xPointsQueue, &gblock, portMAX_DELAY);
 
@@ -226,7 +226,7 @@ void moveMotorsTask(void *param)
 		}
 		// Vuelvo a dar el semaforo
 		//xSemaphoreGive(xSemaphore);
-	}
+//	}
 	}
 }
 

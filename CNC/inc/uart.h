@@ -1,10 +1,17 @@
 #ifndef _UART__H_
 #define _UART__H_
 
+#ifndef TEST_ALL
 #include "FreeRTOS.h"
 #include "task.h"
 #include "sapi.h"
+#endif
+
 #include "config.h"
+
+#ifdef TEST_ALL
+#include "test_utils.h"
+#endif
 
 /**
 * @brief Configuración del UART. Configura el UART_PORT (ver config.h), setea el
@@ -38,5 +45,16 @@ void ready_to_process(void);
 * @return
 */
 int8_t uart_get_buffer(char *s);
+
+
+/**
+* @brief Funcion para guarar caracteres que están almacenados en el fifo del
+* uart en la variables global rx_line.
+* @param
+* @return
+*/
+void uart_fill_in_buff();
+
+
 
 #endif

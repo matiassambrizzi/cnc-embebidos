@@ -378,7 +378,7 @@ void fast_move(float newx, float newy, float newz)
 void home_all()
 {
 
-	speed_t delay = gcode_block_get_speed();
+	speed_t delay = pdMS_TO_TICKS(10);
 
 	while(!end_stop_x_is_press()) {
 		motor_x_move(HOMEX);

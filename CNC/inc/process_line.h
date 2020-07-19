@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef TEST_ALL
 #include "FreeRTOS.h"
 #include "gcode.h"
 #include "sapi.h"
@@ -13,6 +14,7 @@
 #include "config.h"
 #include "uart.h"
 #include "motion.h"
+#endif
 
 extern char rx_line[MAX_RX_BUFFER];
 extern QueueHandle_t xPointsQueue;
@@ -24,6 +26,7 @@ extern QueueHandle_t xPointsQueue;
 * @return nothing
 */
 void processGcodeLineTask(void *parameters);
+
 
 int read_number(char *rxLine, uint8_t *counter, float *number);
 

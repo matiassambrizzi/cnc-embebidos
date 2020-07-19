@@ -1,7 +1,13 @@
 #ifndef _POSITION__H_
 #define _POSITION__H_
 
+#ifndef TEST_ALL
 #include "sapi.h"
+#endif
+
+#ifdef TEST_ALL
+#include <stdint.h>
+#endif
 
 typedef int32_t step_count_t;
 

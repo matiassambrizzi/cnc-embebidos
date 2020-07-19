@@ -53,8 +53,6 @@ void position_z_increment(const int8_t z)
 	actual_pos.pz += z;
 }
 
-
-
 step_count_t position_get_x()
 {
 	return actual_pos.px;

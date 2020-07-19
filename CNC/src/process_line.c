@@ -235,10 +235,10 @@ void processGcodeLineTask(void *parameters)
 			// cola. Si estoy en medio de un HOMING tampoco mando
 			// que estoy listo. Cuando termine ese cilco mandare el
 			// ready y reseteare el gCodeblock.
-			if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
-			   gcode_block_get_movement() != HOMING) {
-				ready_to_process();
-			}
+			//if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
+			 //  gcode_block_get_movement() != HOMING) {
+			//	ready_to_process();
+			//}
 		}
 	}
 }

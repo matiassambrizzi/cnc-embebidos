@@ -26,6 +26,13 @@ el semáforo. Hay que ver que prioridad y con que tiempo se ejecuta a esta tarea
 Esta puede ser un timer que envía el caracter si hay espacio ? si se le da un semáforo ? 
 Notificaciones ?
 
+    - ESP manda caracter de inicio de transmisiosn espera respuesta de la ciaa.
+    - ESP manda lines y espera respuesta, si no la recibe entonces manda de nuevo la linea.
+    - ESP manda caracter de fin de transmison.
+
+2.bis. Otra opcion puede ser que cada vez que el esp manda una linea se quede esperando respuesta. Si no recibe respuesta 
+en un a cantidad de tiempo entonces asume que no se puedo porcesar y la manda de nuevo hasta que alguien le conesta
+
 3. Un semáforo hay que darlo y una tarea lo toma. Cuando lo toma no hay que darlo nuevamente. Hay que esperar que
 la tarea que sincorniza de el semáforo
 

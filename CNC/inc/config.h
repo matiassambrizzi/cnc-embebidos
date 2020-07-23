@@ -20,7 +20,10 @@
  * 1mm por vuelta, y como para dar una vuelta tengo que dar
  * 200 pasos -> 200 pasos/mm
 */
-#define STEPS_PER_MM			(200)
+#define STEPS_PER_MM			(5)
+#define STEPS_PER_MM_X			(5)
+#define STEPS_PER_MM_Y			(5)
+#define STEPS_PER_MM_Z			(200)
 
 /*
  * Configuracion del motor del eje X. Actualizar estos defines
@@ -32,14 +35,14 @@
 /*
  * Configuracion del motor del eje Y
 */
-#define MOTOR_Y_DIR			(GPIO2)
-#define MOTOR_Y_STEP			(GPIO4)
+#define MOTOR_Y_DIR			(GPIO5)
+#define MOTOR_Y_STEP			(GPIO7)
 
 /*
  * Configuracion del motor del eje X
 */
-#define MOTOR_Z_DIR			(GPIO5)
-#define MOTOR_Z_STEP			(GPIO7)
+#define MOTOR_Z_DIR			(GPIO2)
+#define MOTOR_Z_STEP			(GPIO4)
 
 /*
  * Motor gira a la derecha o izquierda. Con esto se pueden cambiar
@@ -71,7 +74,7 @@
 /**
 * Maxima cantidad de caracters que se almacenana en el buffer de rx uart
 */
-#define MAX_RX_BUFFER			(80)
+#define MAX_RX_BUFFER			(40)
 
 #define	READY_TO_PROCESS_CHAR		('$')
 
@@ -84,5 +87,5 @@
 //en el algoritmo de aceleración
 #define MIN_VEL_STEPS_PER_SECOND	(1)
 
-#define MAX_ACCEL_STEPS_PER_SECOND_SQUARE (200)
+#define MAX_ACCEL_STEPS_PER_SECOND_SQUARE (400)
 #endif

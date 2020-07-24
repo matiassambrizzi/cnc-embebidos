@@ -87,4 +87,6 @@ bool_t gcode_get_pause();
 
 void gcode_set_pause(const bool_t p);
 void gcode_set_coordinates(const coordinates_t cord);
+void gcode_reset_xyz(void);
+
 #endif

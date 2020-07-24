@@ -200,15 +200,18 @@ void moveMotorsTask(void *param)
 
 		motion_config.vel_max = gblock.velocity;
 		// TODO: actualizar la aceleración aca!
-		//
+		// el modo relativo no anda porque tengo que resetar el rx_block
+		// cada vez que proceso un comando cuando estoy en este modo
 		if(gblock.cord == RELATIVE) {
-			move.px = (float)position_get_x()/STEPS_PER_MM + (gblock.target_pos.px);
-			move.py = (float)position_get_y()/STEPS_PER_MM + (gblock.target_pos.py);
-			move.pz = (float)position_get_z()/STEPS_PER_MM + (gblock.target_pos.pz);
+			move.px = (float)position_get_x()/STEPS_PER_MM_X + (gblock.target_pos.px);
+			move.py = (float)position_get_y()/STEPS_PER_MM_Y + (gblock.target_pos.py);
+			move.pz = (float)position_get_z()/STEPS_PER_MM_Z + (gblock.target_pos.pz);
+			printf("%d, %d, %d \r\n", (int32_t)move.px, (int32_t)move.py, (int32_t)move.pz);
 		} else {
 			move.px = gblock.target_pos.px;
 			move.py = gblock.target_pos.py;
 			move.pz = gblock.target_pos.pz;
+			printf("%d, %d, %d \r\n", (int32_t)move.px, (int32_t)move.py, (int32_t)move.pz);
 		}
 
 		switch (gblock.type) {
@@ -220,9 +223,9 @@ void moveMotorsTask(void *param)
 				break;
 			case FAST_MOVMENT:
 				//fast_move(move.px, move.py, move.pz);
-				fast_move(gblock.target_pos.px,
-					  gblock.target_pos.py,
-					  gblock.target_pos.pz);
+				fast_move(move.px,
+					  move.py,
+					  move.pz);
 				break;
 			case HOMING:
 				home_all();
@@ -264,9 +267,9 @@ void line_move(float newx, float newy, float newz)
 	// Velocidad de los motores, la inicializo con la velocidad mínima
 	float vel = MIN_VEL_STEPS_PER_SECOND;
 
-	const int32_t new_stepx = newx * STEPS_PER_MM;
-	const int32_t new_stepy = newy * STEPS_PER_MM;
-	const int32_t new_stepz = newz * STEPS_PER_MM;
+	const int32_t new_stepx = newx * STEPS_PER_MM_X;
+	const int32_t new_stepy = newy * STEPS_PER_MM_Y;
+	const int32_t new_stepz = newz * STEPS_PER_MM_Z;
 
 	// Inicio el protocolo de interpolacion
 	interpolation_set_deltas(new_stepx, new_stepy, new_stepz);
@@ -286,14 +289,18 @@ void line_move(float newx, float newy, float newz)
 		// Puedo hacer la pausa aca porque
 		// todas las cuentas las hago en un módulo separado
 		if(gcode_get_pause() != true) {
-		interpolation_run_cycle();
+			interpolation_run_cycle();
 		// STEP 2: Calcular la velocidad teniendo en cuenta la aceleración
 		//updateVelocity(pos, &vel, motion_config, xxs);
-		updateVelocity(pos, &vel, motion_config);
+			updateVelocity(pos, &vel, motion_config);
+			//TODO: Saque la division. La accelearación da genera
+			//ruido en los motores. VER
+			//vel = MAX_VEL_STEPS_PER_SECOND;
+			//vel = motion_config.vel_max;
 		// STEP 3: Poner un delay para manejar la velocidad de giro
-		vTaskDelay(pdMS_TO_TICKS(my_abs(1000/vel)));
+			vTaskDelay(pdMS_TO_TICKS(my_abs(1000/vel)));
 		// STEP4: Actualizar la posición
-		pos = get_updated_position();
+			pos = get_updated_position();
 		} else {vTaskDelay(pdMS_TO_TICKS(500));}
 	}
 
@@ -310,9 +317,11 @@ void fast_move(float newx, float newy, float newz)
 	float vel = MIN_VEL_STEPS_PER_SECOND;
 	int32_t delta_x, delta_y, delta_z;
 	uint8_t dir_x, dir_y, dir_z;
-	const int32_t new_stepx = newx * STEPS_PER_MM;
-	const int32_t new_stepy = newy * STEPS_PER_MM;
-	const int32_t new_stepz = newz * STEPS_PER_MM;
+
+
+	const int32_t new_stepx = newx * STEPS_PER_MM_X;
+	const int32_t new_stepy = newy * STEPS_PER_MM_Y;
+	const int32_t new_stepz = newz * STEPS_PER_MM_Z;
 
 	delta_x = new_stepx - position_get_x();
 	delta_y = new_stepy - position_get_y();

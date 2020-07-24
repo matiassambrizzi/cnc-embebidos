@@ -66,7 +66,7 @@ void gcode_block_set_z(const float z)
 void gcode_block_set_speed(const float s)
 {
 //	s es un valor porcentual
-	if(s <= 20 || s > 100) {
+	if(s <= 0 || s > 100) {
 		return;
 	}
 	const float aux = s / 100.0;
@@ -117,5 +117,9 @@ void gcode_set_coordinates(const coordinates_t cord)
 	rx_gcode.cord = cord;
 }
 
-
-
+void gcode_reset_xyz(void)
+{
+	rx_gcode.target_pos.px = 0;
+	rx_gcode.target_pos.py = 0;
+	rx_gcode.target_pos.pz = 0;
+}

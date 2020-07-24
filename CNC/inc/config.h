@@ -20,10 +20,16 @@
  * 1mm por vuelta, y como para dar una vuelta tengo que dar
  * 200 pasos -> 200 pasos/mm
 */
+
+/*
+ * La correa GT2 tiene una resolucion de 0.2mm / paso o 5 pasos/mm
+ * Si uso microstepping de 1/4 -> 200 pasos / vuelta -> 800 pasos / vuelta
+ */
 #define STEPS_PER_MM			(5)
 #define STEPS_PER_MM_X			(5)
-#define STEPS_PER_MM_Y			(5)
-#define STEPS_PER_MM_Z			(200)
+//#define STEPS_PER_MM_Y			(5)
+#define STEPS_PER_MM_Y			(20)
+#define STEPS_PER_MM_Z			(320)
 
 /*
  * Configuracion del motor del eje X. Actualizar estos defines
@@ -82,10 +88,10 @@
 
 // maxima Velocidad medida en pasos por segundo
 // 300 Steps/second -> Se taduce en un delay de aproximadamente 3ms
-#define MAX_VEL_STEPS_PER_SECOND	(400)
+#define MAX_VEL_STEPS_PER_SECOND	(1000)
 //Minima velocidad distinta de cero para evitar una division por cero
 //en el algoritmo de aceleración
 #define MIN_VEL_STEPS_PER_SECOND	(1)
 
-#define MAX_ACCEL_STEPS_PER_SECOND_SQUARE (400)
+#define MAX_ACCEL_STEPS_PER_SECOND_SQUARE (1000)
 #endif

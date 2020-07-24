@@ -1,13 +1,15 @@
 #include "process_line.h"
 
-
 extern SemaphoreHandle_t xSemaphore;
+
 /*
  * Prototipos funciones privadas
  * =============================
  */
 static bool_t isNumber(const uint8_t c);
 static bool_t isLetter(const uint8_t c);
+static bool_t isValidLetter(const char c);
+
 /*
  * Implementación de funciones privadas
  * ====================================
@@ -22,57 +24,13 @@ static bool_t isNumber(const uint8_t c)
 	return (c >= '0' && c<= '9');
 }
 
-
-float stringToFloat(char *str)
+static bool_t isValidLetter(const char c)
 {
-	uint32_t i = 0;
-	char aux;
-	float result = 0;
-	float base = 0.1;
-	bool_t neg = false;
-
-	aux = str[i];
-
-	// Chequeo de signo
-	if(aux == '-') {
-		neg = true;
-		i++;
-		aux = str[i];
-	}
-	else if(aux == '+') {
-		i++;
-		aux = str[i];
-	}
-	// Parte entera
-	while(aux != '.' && aux != '\0') {
-		if(!isNumber(aux)) {
-			// st = is_letter;
-			//return IS_LETTER;
-			break;
-		}
-		result = result*10 + aux - '0';
-		i++;
-		aux = str[i];
-	}
-	// Parte decimal
-	if(aux == '.') {
-		i++;
-		aux = str[i];
-		while(aux != '\0' && isNumber(aux)) {
-			result = result + base*(float)(aux-'0');
-			base /= 10;
-			i++;
-			aux = str[i];
-		}
-	}
-
-	if(neg == true) {
-		result *= -1;
-	}
-
-	return result;
+	return (c == 'G') || (c == 'F') ||
+		(c == '$') || (c == 'X') ||
+		(c == 'Y') || (c == 'Z') ||
+		(c == 'M');
 }
-
 
 /*
  * Implementación de funciones públicas
@@ -110,16 +68,13 @@ void processGcodeLineTask(void *parameters)
 			//Check for EOL
 			while(rx_line[counter] != '\0') {
 
-				// Chequear si en la linea hay al menos una
-				// X Y Z G F $$
 				letter = rx_line[counter];
 
-				//We have a command
-				if(letter == '$') {
+				// Chequear si en la linea hay al menos una
+				// X Y Z G F $$
+				if(!isValidLetter(letter)) { counter++; continue;}
 
-					// read the next letter
-					// update counter and save command
-					// letter
+				if(letter == '$') {
 #ifdef DEBUG
 					vPrintString("Me llego un comando\r\n");
 #endif
@@ -132,7 +87,9 @@ void processGcodeLineTask(void *parameters)
 					uartWriteString(UART_PORT, "Descarto valor");
 					letter = 'D';
 				}
+#ifdef DEBUG
 				printf("Number is: %d\n",(int) number);
+#endif
 
 				int_val = (uint8_t) number;
 
@@ -190,12 +147,7 @@ void processGcodeLineTask(void *parameters)
 						break;
 					default:
 						;
-#ifdef DEBUG
-						//vPrintString("Default Case\r\n");
-#endif
-						//Do nothing
 					}
-					//Si es un código G entonces tengo que ver que tipo es
 					break;
 
 				case 'X':
@@ -233,31 +185,22 @@ void processGcodeLineTask(void *parameters)
 				case '$':
 					switch (command_letter) {
 					case 'a':
-						// set accel = number
 #ifdef DEBUG
 						printf("Numero %d\r\n", (int32_t) number);
 #endif
 						motion_set_accel(number);
 						break;
 					case '$':
-						printf("X: %d, ", position_get_x() / 200);
-						printf("Y: %d, ", position_get_y() / 200);
-						printf("Z: %d\r\n", position_get_z() / 200);
-						// Imprimir la configuración
-						// actual
+						printf("X: %d, ", position_get_x() / STEPS_PER_MM_X);
+						printf("Y: %d, ", position_get_y() / STEPS_PER_MM_Y);
+						printf("Z: %d\r\n", position_get_z() / STEPS_PER_MM_Z);
 						break;
 					default:
-#ifdef DEBUG
-						printf("Default Command");
-#endif
 						;
 					}
 					break;
 
 				default:
-#ifdef DEBUG
-					//vPrintString("Default Case\r\n");
-#endif
 					;
 				}
 			}
@@ -285,6 +228,11 @@ void processGcodeLineTask(void *parameters)
 				}
 				xQueueSend(xPointsQueue, (gcode_get_block()),
 					   portMAX_DELAY);
+				// TODO: Si estoy en modo relativo entonces aca
+				// tengo que limpiar rx_gcode_block x, y, z
+				// Pero si cambio el modo entonces voy a tener
+				// pos 0 0 0.....
+				//gcode_reset_xyz();
 			}
 
 		} else {
@@ -317,3 +265,52 @@ int read_number(char *rxLine, uint8_t *counter, float *number)
 	return 0;
 }
 
+float stringToFloat(char *str)
+{
+	uint32_t i = 0;
+	char aux;
+	float result = 0;
+	float base = 0.1;
+	bool_t neg = false;
+
+	aux = str[i];
+
+	// Chequeo de signo
+	if(aux == '-') {
+		neg = true;
+		i++;
+		aux = str[i];
+	}
+	else if(aux == '+') {
+		i++;
+		aux = str[i];
+	}
+	// Parte entera
+	while(aux != '.' && aux != '\0') {
+		if(!isNumber(aux)) {
+			// st = is_letter;
+			//return IS_LETTER;
+			break;
+		}
+		result = result*10 + aux - '0';
+		i++;
+		aux = str[i];
+	}
+	// Parte decimal
+	if(aux == '.') {
+		i++;
+		aux = str[i];
+		while(aux != '\0' && isNumber(aux)) {
+			result = result + base*(float)(aux-'0');
+			base /= 10;
+			i++;
+			aux = str[i];
+		}
+	}
+
+	if(neg == true) {
+		result *= -1;
+	}
+
+	return result;
+}

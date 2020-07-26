@@ -59,7 +59,7 @@ static uint8_t motor_third_dir;
 static max_axis_t max_axis = X_AXIS;
 
 static step_count_t max_target_pos;
-
+static coordinates_t move_coordinates = ABSOLUTE;
 
 
 /*
@@ -213,9 +213,21 @@ void interpolation_set_deltas(int32_t new_stepx,
 			      int32_t new_stepy,
 			      int32_t new_stepz)
 {
-	int32_t delta_x = new_stepx - position_get_x();
-	int32_t delta_y = new_stepy - position_get_y();
-	int32_t delta_z = new_stepz - position_get_z();
+	int32_t delta_x;
+	int32_t delta_y;
+	int32_t delta_z;
+
+	if(move_coordinates == ABSOLUTE) {
+		delta_x = new_stepx - position_get_x();
+		delta_y = new_stepy - position_get_y();
+		delta_z = new_stepz - position_get_z();
+		printf("Abs coords\r\n");
+	} else {
+		delta_x = new_stepx;
+		delta_y = new_stepy;
+		delta_z = new_stepz;
+		printf("Relative coords\r\n");
+	}
 
 	set_max_axis(my_abs(delta_x), my_abs(delta_y), my_abs(delta_z));
 
@@ -226,6 +238,9 @@ void interpolation_set_deltas(int32_t new_stepx,
 		delta_third_axis = delta_z;
 		set_x_is_driving();
 		max_target_pos = new_stepx;
+		if(move_coordinates == RELATIVE) {
+			max_target_pos = position_get_x() + new_stepx;
+		}
 		break;
 	case Y_AXIS:
 		delta_drive_axis = delta_y;
@@ -233,6 +248,9 @@ void interpolation_set_deltas(int32_t new_stepx,
 		delta_third_axis = delta_z;
 		set_y_is_driving();
 		max_target_pos = new_stepy;
+		if(move_coordinates == RELATIVE) {
+			max_target_pos = position_get_y() + new_stepy;
+		}
 		break;
 	case Z_AXIS:
 		delta_drive_axis = delta_z;
@@ -240,6 +258,9 @@ void interpolation_set_deltas(int32_t new_stepx,
 		delta_third_axis = delta_x;
 		set_z_is_driving();
 		max_target_pos = new_stepz;
+		if(move_coordinates == RELATIVE) {
+			max_target_pos = position_get_z() + new_stepz;
+		}
 		break;
 	default:
 		;
@@ -275,4 +296,7 @@ int32_t get_drive_delta()
 	return delta_drive_axis;
 }
 
-
+void interpolation_set_coordinate(coordinates_t coord)
+{
+	move_coordinates = coord;
+}

@@ -14,6 +14,7 @@ QueueHandle_t xPointsQueue;
  */
 
 typedef step_count_t (*get_pos)();
+
 typedef struct {
 	uint32_t accel;  //accel in steps per second square
 	// get pos para el algoritmo de acceleración
@@ -42,20 +43,7 @@ static uint32_t steps_to_reach_max_vel;
  * =============================
  */
 
-/**
-* @brief Funcion que devuelve el máximo entre 3 parametros x, y z
-* @param x son los pasos que hay que hacer en x
-* @param y son los pasos que hay que hacer en y
-* @param y son los pasos que hay que hacer en z
-* @return maximo
-*/
 static float max(float x, float y, float z);
-
-/**
-* @brief Funcion para calcular el valor absoluto de un numero
-* @param t
-* @return valor absoluto de t
-*/
 static int32_t my_abs(int32_t t);
 
 /**
@@ -65,11 +53,6 @@ static int32_t my_abs(int32_t t);
 */
 static uint8_t my_direc(int32_t d);
 
-/**
-* @brief Funcion para elevar al cuadrado un numero
-* @param x numero
-* @return x al cuadrado
-*/
 static uint32_t pow2(int32_t x);
 
 /**
@@ -200,19 +183,27 @@ void moveMotorsTask(void *param)
 
 		motion_config.vel_max = gblock.velocity;
 		// TODO: actualizar la aceleración aca!
-		// el modo relativo no anda porque tengo que resetar el rx_block
-		// cada vez que proceso un comando cuando estoy en este modo
+
+		// Seteo movimiento relativo o absoluto
+		interpolation_set_coordinate(gblock.cord);
+
+		move.px = gblock.target_pos.px;
+		move.py = gblock.target_pos.py;
+		move.pz = gblock.target_pos.pz;
+
 		if(gblock.cord == RELATIVE) {
-			move.px = (float)position_get_x()/STEPS_PER_MM_X + (gblock.target_pos.px);
-			move.py = (float)position_get_y()/STEPS_PER_MM_Y + (gblock.target_pos.py);
-			move.pz = (float)position_get_z()/STEPS_PER_MM_Z + (gblock.target_pos.pz);
-			printf("%d, %d, %d \r\n", (int32_t)move.px, (int32_t)move.py, (int32_t)move.pz);
-		} else {
-			move.px = gblock.target_pos.px;
-			move.py = gblock.target_pos.py;
-			move.pz = gblock.target_pos.pz;
-			printf("%d, %d, %d \r\n", (int32_t)move.px, (int32_t)move.py, (int32_t)move.pz);
+			if(!gblock.movement[0]) {
+				move.px = 0;
+			}
+			if(!gblock.movement[1]) {
+				move.py = 0;
+			}
+			if(!gblock.movement[2]) {
+				move.pz = 0;
+			}
 		}
+
+		printf("%d, %d, %d \r\n", (int32_t)move.px, (int32_t)move.py, (int32_t)move.pz);
 
 		switch (gblock.type) {
 			case LINE:
@@ -241,7 +232,6 @@ void moveMotorsTask(void *param)
 
 void motion_reset()
 {
-	// Seteo los valores máximos y minimos por defecto
 	motion_config.accel =  MAX_ACCEL_STEPS_PER_SECOND_SQUARE;
 	motion_config.vel_max = MAX_VEL_STEPS_PER_SECOND;
 	motion_config.vel_min = MIN_VEL_STEPS_PER_SECOND;
@@ -293,10 +283,6 @@ void line_move(float newx, float newy, float newz)
 		// STEP 2: Calcular la velocidad teniendo en cuenta la aceleración
 		//updateVelocity(pos, &vel, motion_config, xxs);
 			updateVelocity(pos, &vel, motion_config);
-			//TODO: Saque la division. La accelearación da genera
-			//ruido en los motores. VER
-			//vel = MAX_VEL_STEPS_PER_SECOND;
-			//vel = motion_config.vel_max;
 		// STEP 3: Poner un delay para manejar la velocidad de giro
 			vTaskDelay(pdMS_TO_TICKS(my_abs(1000/vel)));
 		// STEP4: Actualizar la posición
@@ -393,7 +379,6 @@ void fast_move(float newx, float newy, float newz)
 }
 
 
-// TODO: ACELERACION
 void home_all()
 {
 

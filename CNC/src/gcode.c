@@ -1,5 +1,10 @@
 #include "gcode.h"
 
+
+#define _X_AXIS	0
+#define _Y_AXIS	1
+#define _Z_AXIS	2
+
 /*
  * Variables internas
  * ==================
@@ -117,9 +122,38 @@ void gcode_set_coordinates(const coordinates_t cord)
 	rx_gcode.cord = cord;
 }
 
+coordinates_t gcode_get_coordinates()
+{
+	return rx_gcode.cord;
+}
+
 void gcode_reset_xyz(void)
 {
 	rx_gcode.target_pos.px = 0;
 	rx_gcode.target_pos.py = 0;
 	rx_gcode.target_pos.pz = 0;
 }
+
+
+void gcode_move_x()
+{
+	rx_gcode.movement[_X_AXIS] = true;
+}
+
+void gcode_move_y()
+{
+	rx_gcode.movement[_Y_AXIS] = true;
+}
+
+void gcode_move_z()
+{
+	rx_gcode.movement[_Z_AXIS] = true;
+}
+
+void gcode_reset_move()
+{
+	rx_gcode.movement[_X_AXIS] = false;
+	rx_gcode.movement[_Y_AXIS] = false;
+	rx_gcode.movement[_Z_AXIS] = false;
+}
+

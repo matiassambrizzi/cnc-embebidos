@@ -61,6 +61,7 @@ void processGcodeLineTask(void *parameters)
 			number = 0;
 			int_val = 0;
 			movment = false;
+			gcode_reset_move();
 
 #ifdef DEBUG
 			vPrintString(rx_line);
@@ -144,6 +145,7 @@ void processGcodeLineTask(void *parameters)
 					case 92:
 						//Set this pos as 0,0,0
 						position_reset();
+						gcode_reset_xyz();
 						break;
 					default:
 						;
@@ -152,14 +154,17 @@ void processGcodeLineTask(void *parameters)
 
 				case 'X':
 					gcode_block_set_x(number);
+					gcode_move_x();
 					movment = true;
 					break;
 				case 'Y':
 					gcode_block_set_y(number);
+					gcode_move_y();
 					movment = true;
 					break;
 				case 'Z':
 					gcode_block_set_z(number);
+					gcode_move_z();
 					movment = true;
 					break;
 				case 'F':
@@ -181,7 +186,6 @@ void processGcodeLineTask(void *parameters)
 					}
 					break;
 
-				//Command case
 				case '$':
 					switch (command_letter) {
 					case 'a':
@@ -205,23 +209,11 @@ void processGcodeLineTask(void *parameters)
 				}
 			}
 
-			// Agrego un nuevo campo en la estructura de codigo G
-			// Si hay una pausa entonces no doy el semaforo de
-			// movimiento
-			// Esto no funciona, porque la tarea que da el semaforo
-			// se tiene que estar ejecutando periodicamente no solo
-			// cuando llega algo por uart.
-			// Tengo que hacer una tarea que se ejecute cada algun
-			// tiempo y se fije si se quiere hacer una pausa.
 			// TODO: ESTO NO FUNCIONA
 			 //if(gcode_get_pause() != true) {
 				//xSemaphoreGive(xSemaphore);
 			 //}
-			// Me fijo si el comando corresponde con un movimiento
-			// si esto es verdad esntones pongo el bloque en la cola
 			if(movment) {
-				// Si el comando corresponde con G28(HOMING)
-				// Se envia a la cola una posicion futura random
 				if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
 				   gcode_block_get_movement() != HOMING) {
 					ready_to_process();
@@ -232,16 +224,9 @@ void processGcodeLineTask(void *parameters)
 				// tengo que limpiar rx_gcode_block x, y, z
 				// Pero si cambio el modo entonces voy a tener
 				// pos 0 0 0.....
-				//gcode_reset_xyz();
 			}
 
 		} else {
-			// Si estoy aca es porque no me llego ningun dato en
-			// 500ms -> mando que estoy listo si tengo espacio en la
-			// cola. Si estoy en medio de un HOMING tampoco mando
-			// que estoy listo. Cuando termine ese cilco mandare el
-			// ready y reseteare el gCodeblock.
-			//if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
 			 //  gcode_block_get_movement() != HOMING) {
 			//	ready_to_process();
 			//}

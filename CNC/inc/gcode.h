@@ -16,6 +16,7 @@
 
 // TODO: Esto no se usa
 #define speed_t			TickType_t
+#define		MAX_AXIS	3
 
 typedef struct g_block_t {
 	position_t target_pos;
@@ -26,6 +27,7 @@ typedef struct g_block_t {
 	movment_type_t type;
 	bool_t pause;
 	coordinates_t cord;
+	bool_t movement[MAX_AXIS];
 } g_block_t;
 
 typedef struct g_block_t * gBlockPtr;
@@ -89,4 +91,15 @@ void gcode_set_pause(const bool_t p);
 void gcode_set_coordinates(const coordinates_t cord);
 void gcode_reset_xyz(void);
 
+void gcode_move_x(void);
+void gcode_move_y(void);
+void gcode_move_z(void);
+
+void gcode_reset_move();
+
+bool_t gcode_x_want_to_move();
+bool_t gcode_y_want_to_move();
+bool_t gcode_z_want_to_move();
+
+coordinates_t gcode_get_coordinates();
 #endif

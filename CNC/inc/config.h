@@ -4,7 +4,6 @@
  * Poner toda las configuraciones del usuario aca
 */
 
-
 #define DEBUG
 
 /*
@@ -26,8 +25,8 @@
  * Si uso microstepping de 1/4 -> 200 pasos / vuelta -> 800 pasos / vuelta
  */
 #define STEPS_PER_MM			(5)
-#define STEPS_PER_MM_X			(5)
-//#define STEPS_PER_MM_Y			(5)
+// TODO: Poner microstepping 1/16 para tener mucha mas res
+#define STEPS_PER_MM_X			(20)
 #define STEPS_PER_MM_Y			(20)
 #define STEPS_PER_MM_Z			(320)
 
@@ -80,7 +79,7 @@
 /**
 * Maxima cantidad de caracters que se almacenana en el buffer de rx uart
 */
-#define MAX_RX_BUFFER			(40)
+#define MAX_RX_BUFFER			(80)
 
 #define	READY_TO_PROCESS_CHAR		('$')
 

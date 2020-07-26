@@ -28,7 +28,7 @@
 // TODO: Poner microstepping 1/16 para tener mucha mas res
 #define STEPS_PER_MM_X			(20)
 #define STEPS_PER_MM_Y			(20)
-#define STEPS_PER_MM_Z			(320)
+#define STEPS_PER_MM_Z			(640)
 
 /*
  * Configuracion del motor del eje X. Actualizar estos defines

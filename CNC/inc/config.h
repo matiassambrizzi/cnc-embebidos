@@ -62,8 +62,8 @@
  * El Baudrate de la comunicación serie
 */
 #define COM_BAUDRATE			(115200)
-#define UART_PORT			(UART_USB)
-//#define UART_PORT			(UART_232)
+//#define UART_PORT			(UART_USB)
+#define UART_PORT			(UART_232)
 
 
 //TODO: Definir los pines de los endstops

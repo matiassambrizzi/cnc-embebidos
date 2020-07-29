@@ -194,6 +194,12 @@ void processGcodeLineTask(void *parameters)
 #endif
 						motion_set_accel(number);
 						break;
+					case 'r':
+						if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
+							gcode_block_get_movement() != HOMING) {
+							ready_to_process();
+						}
+						break;
 					case '$':
 						printf("X: %d, ", position_get_x() / STEPS_PER_MM_X);
 						printf("Y: %d, ", position_get_y() / STEPS_PER_MM_Y);
@@ -214,10 +220,6 @@ void processGcodeLineTask(void *parameters)
 				//xSemaphoreGive(xSemaphore);
 			 //}
 			if(movment) {
-				if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
-				   gcode_block_get_movement() != HOMING) {
-					ready_to_process();
-				}
 				xQueueSend(xPointsQueue, (gcode_get_block()),
 					   portMAX_DELAY);
 				// TODO: Si estoy en modo relativo entonces aca

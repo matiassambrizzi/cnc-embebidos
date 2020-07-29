@@ -23,6 +23,7 @@ typedef struct {
 	uint32_t vel_min; //vel in steps per second
 	step_count_t crop_step_accel;
 	step_count_t crop_step_deaccel;
+	coordinates_t coords;
 } motion_t;
 
 /*
@@ -182,6 +183,7 @@ void moveMotorsTask(void *param)
 		xQueueReceive(xPointsQueue, &gblock, portMAX_DELAY);
 
 		motion_config.vel_max = gblock.velocity;
+		motion_config.coords = gblock.cord;
 		// TODO: actualizar la aceleración aca!
 
 		// Seteo movimiento relativo o absoluto
@@ -207,13 +209,11 @@ void moveMotorsTask(void *param)
 
 		switch (gblock.type) {
 			case LINE:
-				//line_move(move.px, move.py, move.pz);
 				line_move(move.px,
 					  move.py,
 					  move.pz);
 				break;
 			case FAST_MOVMENT:
-				//fast_move(move.px, move.py, move.pz);
 				fast_move(move.px,
 					  move.py,
 					  move.pz);
@@ -292,7 +292,6 @@ void line_move(float newx, float newy, float newz)
 
 }
 
-// TODO: ACELERACION
 // No es tan facil meter aceleración en el movimiento rápido
 // A menos que mueva un eje a la vez. Me parece que en el movimeinto rápido lo
 // único que puedo hacer es moverme a una velocidad relativamente baja. Por que
@@ -302,6 +301,7 @@ void fast_move(float newx, float newy, float newz)
 	step_count_t pos;
 	float vel = MIN_VEL_STEPS_PER_SECOND;
 	int32_t delta_x, delta_y, delta_z;
+	step_count_t final_pos_x, final_pos_y, final_pos_z;
 	uint8_t dir_x, dir_y, dir_z;
 
 
@@ -309,9 +309,21 @@ void fast_move(float newx, float newy, float newz)
 	const int32_t new_stepy = newy * STEPS_PER_MM_Y;
 	const int32_t new_stepz = newz * STEPS_PER_MM_Z;
 
-	delta_x = new_stepx - position_get_x();
-	delta_y = new_stepy - position_get_y();
-	delta_z = new_stepz - position_get_z();
+	if(motion_config.coords == ABSOLUTE) {
+		delta_x = new_stepx - position_get_x();
+		delta_y = new_stepy - position_get_y();
+		delta_z = new_stepz - position_get_z();
+		final_pos_x = new_stepx;
+		final_pos_y = new_stepy;
+		final_pos_z = new_stepz;
+	} else {
+		delta_x = new_stepx;
+		delta_y = new_stepy;
+		delta_z = new_stepz;
+		final_pos_x = position_get_x() + new_stepx;
+		final_pos_y = position_get_y() + new_stepy;
+		final_pos_z = position_get_z() + new_stepz;
+	}
 
 	dir_x = my_direc(delta_x);
 	dir_y = my_direc(delta_y);
@@ -329,7 +341,7 @@ void fast_move(float newx, float newy, float newz)
 	// si delta_XXX == 0 -> No hay movimiento
 	if(delta_x >= delta_y && delta_x >= delta_z) {
 		set_up_velocity(position_get_x(),
-				new_stepx,
+				final_pos_x,
 				delta_x,
 				xs);
 		motion_config.pos = position_get_x;
@@ -337,7 +349,7 @@ void fast_move(float newx, float newy, float newz)
 
 	if(delta_y >= delta_x && delta_y >= delta_z) {
 		set_up_velocity(position_get_y(),
-				new_stepy,
+				final_pos_y,
 				delta_y,
 				ys);
 		motion_config.pos = position_get_y;
@@ -345,7 +357,7 @@ void fast_move(float newx, float newy, float newz)
 
 	if(delta_z >= delta_y && delta_z >= delta_x) {
 		set_up_velocity(position_get_z(),
-				new_stepz,
+				final_pos_z,
 				delta_z,
 				zs);
 		motion_config.pos = position_get_z;
@@ -358,23 +370,25 @@ void fast_move(float newx, float newy, float newz)
 	pos = motion_config.pos();
 
 	while(!xStop || !yStop || !zStop) {
-		if(position_get_x() != new_stepx) {
-			position_x_increment(xs);
-			motor_x_move(dir_x);
-		} else { xStop = true; }
+		if(gcode_get_pause() != true) {
+			if(position_get_x() != final_pos_x) {
+				position_x_increment(xs);
+				motor_x_move(dir_x);
+			} else { xStop = true; }
 
-		if(position_get_y() != new_stepy) {
-			position_y_increment(ys);
-			motor_y_move(dir_y);
-		} else { yStop = true;}
+			if(position_get_y() != final_pos_y) {
+				position_y_increment(ys);
+				motor_y_move(dir_y);
+			} else { yStop = true;}
 
-		if(position_get_z() != new_stepz) {
-			position_z_increment(zs);
-			motor_z_move(dir_z);
-		} else {zStop = true;}
-		updateVelocity(pos, &vel, motion_config);
-		vTaskDelay(1000/vel);
-		pos = motion_config.pos();
+			if(position_get_z() != final_pos_z) {
+				position_z_increment(zs);
+				motor_z_move(dir_z);
+			} else {zStop = true;}
+			updateVelocity(pos, &vel, motion_config);
+			vTaskDelay(1000/vel);
+			pos = motion_config.pos();
+		} else { vTaskDelay(pdMS_TO_TICKS(500)); }
 	}
 }
 

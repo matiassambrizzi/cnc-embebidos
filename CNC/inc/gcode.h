@@ -1,20 +1,33 @@
 #ifndef _GCODE_BLOCK__H
 #define _GCODE_BLOCK__H
 
+#ifndef TEST_ALL
 #include "FreeRTOS.h"
+#endif
+
+#ifdef TEST_ALL
+#include "test_utils.h"
+#include <stdint.h>
+#endif
+
 #include "position.h"
 #include "types.h"
 #include "config.h"
 
 // TODO: Esto no se usa
 #define speed_t			TickType_t
+#define		MAX_AXIS	3
 
 typedef struct g_block_t {
 	position_t target_pos;
 	measurement_units_t units;
 	speed_t speed; // TODO: Esto es un porcentaje (0~100) de la máxima velocidad se pasa con el comando F
+	// Mejor que sea float?
 	uint32_t velocity; // Velocidad en steps/sec
 	movment_type_t type;
+	bool_t pause;
+	coordinates_t cord;
+	bool_t movement[MAX_AXIS];
 } g_block_t;
 
 typedef struct g_block_t * gBlockPtr;
@@ -72,5 +85,21 @@ position_t * gcode_block_get_position();
 //void get_target_speed();
 
 
+bool_t gcode_get_pause();
 
+void gcode_set_pause(const bool_t p);
+void gcode_set_coordinates(const coordinates_t cord);
+void gcode_reset_xyz(void);
+
+void gcode_move_x(void);
+void gcode_move_y(void);
+void gcode_move_z(void);
+
+void gcode_reset_move();
+
+bool_t gcode_x_want_to_move();
+bool_t gcode_y_want_to_move();
+bool_t gcode_z_want_to_move();
+
+coordinates_t gcode_get_coordinates();
 #endif

@@ -1,7 +1,17 @@
 #ifndef _MOTORS__H_
 #define _MOTORS__H
 
+#ifdef TEST_ALL
+#include <stdio.h>
+#include <stdint.h>
+#include "test_utils.h"
+#endif
+
+
+#ifndef TEST_ALL
 #include "sapi.h"
+#endif
+
 #include "config.h"
 
 /**

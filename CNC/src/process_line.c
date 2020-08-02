@@ -1,5 +1,6 @@
 #include "process_line.h"
 
+extern SemaphoreHandle_t xSemaphore;
 
 /*
  * Prototipos funciones privadas
@@ -7,14 +8,39 @@
  */
 static bool_t isNumber(const uint8_t c);
 static bool_t isLetter(const uint8_t c);
-
-
-
+static bool_t isValidLetter(const char c);
+static void print_position();
 
 /*
  * Implementación de funciones privadas
  * ====================================
  */
+
+static void print_position()
+{
+	char aux_xpos[10];
+	char aux_ypos[10];
+	char aux_zpos[10];
+
+	float xpos = (float) position_get_x() / STEPS_PER_MM_X;
+	float ypos = (float) position_get_y() / STEPS_PER_MM_Y;
+	float zpos = (float) position_get_z() / STEPS_PER_MM_Z;
+
+	floatToString(xpos, aux_xpos, 2);
+	floatToString(ypos, aux_ypos, 2);
+	floatToString(zpos, aux_zpos, 2);
+
+	uartWriteString(UART_PORT, "X: ");
+	uartWriteString(UART_PORT, aux_xpos);
+	uartWriteString(UART_PORT, ", ");
+	uartWriteString(UART_PORT, "Y: ");
+	uartWriteString(UART_PORT, aux_ypos);
+	uartWriteString(UART_PORT, ", ");
+	uartWriteString(UART_PORT, "Z: ");
+	uartWriteString(UART_PORT, aux_zpos);
+	uartWriteString(UART_PORT, "\n\r");
+}
+
 static bool_t isLetter(const uint8_t c)
 {
 	return (c >= 'A' && c <= 'Z');
@@ -23,6 +49,14 @@ static bool_t isLetter(const uint8_t c)
 static bool_t isNumber(const uint8_t c)
 {
 	return (c >= '0' && c<= '9');
+}
+
+static bool_t isValidLetter(const char c)
+{
+	return (c == 'G') || (c == 'F') ||
+		(c == '$') || (c == 'X') ||
+		(c == 'Y') || (c == 'Z') ||
+		(c == 'M');
 }
 
 /*
@@ -41,6 +75,7 @@ void processGcodeLineTask(void *parameters)
 	float number=0;
 	uint8_t int_val = 0;
 	bool_t movment = false;
+	char aux_pos[20];
 
 	while(1) {
 
@@ -54,21 +89,24 @@ void processGcodeLineTask(void *parameters)
 			number = 0;
 			int_val = 0;
 			movment = false;
+			gcode_reset_move();
 
-			uartWriteString(UART_PORT, rx_line);
-			uartWriteString(UART_PORT, "\r\n");
+#ifdef DEBUG
+			vPrintString(rx_line);
+#endif
 			//Check for EOL
 			while(rx_line[counter] != '\0') {
 
 				letter = rx_line[counter];
 
-				//We have a command
-				if(letter == '$') {
+				// Chequear si en la linea hay al menos una
+				// X Y Z G F $$
+				if(!isValidLetter(letter)) { counter++; continue;}
 
-					// read the next letter
-					// update counter and save command
-					// letter
-					uartWriteString(UART_USB,"Me llego un comando\r\n");
+				if(letter == '$') {
+#ifdef DEBUG
+					vPrintString("Me llego un comando\r\n");
+#endif
 					counter++;
 					command_letter = rx_line[counter];
 				}
@@ -78,6 +116,9 @@ void processGcodeLineTask(void *parameters)
 					uartWriteString(UART_PORT, "Descarto valor");
 					letter = 'D';
 				}
+#ifdef DEBUG
+				printf("Number is: %d\n",(int) number);
+#endif
 
 				int_val = (uint8_t) number;
 
@@ -87,18 +128,26 @@ void processGcodeLineTask(void *parameters)
 					switch (int_val) {
 					case 0:
 						//Fast Move
+#ifdef DEBUG
+						vPrintString("Movimiento Rapido\r\n");
 						uartWriteString(UART_PORT, "Movimiento Rapido\r\n");
+#endif
 						gcode_block_set_movment(FAST_MOVMENT);
 						break;
 					case 1:
 						//line move
-						uartWriteString(UART_PORT, "Movimiento Lineal\r\n");
+#ifdef DEBUG
+						vPrintString("Movimiento Lineal\r\n");
+						uartWriteString(UART_PORT, "Movimiento Linea\r\n");
+#endif
 						gcode_block_set_movment(LINE);
 						break;
 					case 2:
 						//TODO: Arc Move
-						uartWriteString(UART_PORT, "Movimiento en Arco\r\n");
-						gcode_block_set_movment(ARC);
+#ifdef DEBUG
+						vPrintString("Movimiento en Arco\r\n");
+#endif
+						//gcode_block_set_movment(ARC);
 						break;
 					case 10:
 						// Set this pos as origin ?
@@ -109,36 +158,43 @@ void processGcodeLineTask(void *parameters)
 						break;
 					case 28:
 						//TODO: Homing
-						uartWriteString(UART_PORT, "HOMING\r\n");
+#ifdef DEBUG
+						vPrintString("HOMING\r\n");
+#endif
 						gcode_block_set_movment(HOMING);
 						movment = true;
 						break;
 					case 90:
 						//Absolute mode
+						gcode_set_coordinates(ABSOLUTE);
 						break;
 					case 91:
+						gcode_set_coordinates(RELATIVE);
 						//Relative Mode
 						break;
 					case 92:
 						//Set this pos as 0,0,0
+						position_reset();
+						gcode_reset_xyz();
 						break;
 					default:
-						uartWriteString(UART_PORT, "Defaultcase num\r\n");
-						//Do nothing
+						;
 					}
-					//Si es un código G entonces tengo que ver que tipo es
 					break;
 
 				case 'X':
 					gcode_block_set_x(number);
+					gcode_move_x();
 					movment = true;
 					break;
 				case 'Y':
 					gcode_block_set_y(number);
+					gcode_move_y();
 					movment = true;
 					break;
 				case 'Z':
 					gcode_block_set_z(number);
+					gcode_move_z();
 					movment = true;
 					break;
 				case 'F':
@@ -146,49 +202,63 @@ void processGcodeLineTask(void *parameters)
 					//Updated Speed
 					break;
 
-				//Command case
+				case 'M':
+					switch (int_val) {
+					case 2:
+						uartWriteString(UART_PORT, "Pausa\n\r");
+						gcode_set_pause(true);
+						break;
+					case 3:
+						uartWriteString(UART_PORT, "Continuar\n\r");
+						gcode_set_pause(false);
+						break;
+					default:
+						;
+					}
+					break;
+
 				case '$':
 					switch (command_letter) {
 					case 'a':
-						// set accel = number
+#ifdef DEBUG
 						printf("Numero %d\r\n", (int32_t) number);
+						uartWriteString(UART_PORT, "Seteo aceleración\n\r");
+#endif
 						motion_set_accel(number);
 						break;
+					case 'r':
+						if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
+							gcode_block_get_movement() != HOMING) {
+							ready_to_process();
+						}
+						break;
 					case '$':
-						// Imprimir la configuración
-						// actual
+						print_position();
 						break;
 					default:
-						printf("Default Command", (int32_t) number);
 						;
 					}
 					break;
 
 				default:
-					uartWriteString(UART_PORT, "Defaultcase value\r\n");
 					;
 				}
 			}
-			// Me fijo si el comando corresponde con un movimiento
-			// si esto es verdad esntones pongo el bloque en la cola
+
+			// TODO: ESTO NO FUNCIONA
+			 //if(gcode_get_pause() != true) {
+				//xSemaphoreGive(xSemaphore);
+			 //}
 			if(movment) {
-				// Si el comando corresponde con G28(HOMING)
-				// Se envia a la cola una posicion futura random
-				if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
-				   gcode_block_get_movement() != HOMING) {
-					ready_to_process();
-				}
 				xQueueSend(xPointsQueue, (gcode_get_block()),
 					   portMAX_DELAY);
+				// TODO: Si estoy en modo relativo entonces aca
+				// tengo que limpiar rx_gcode_block x, y, z
+				// Pero si cambio el modo entonces voy a tener
+				// pos 0 0 0.....
 			}
 
 		} else {
-			// Si estoy aca es porque no me llego ningun dato en
-			// 500ms -> mando que estoy listo si tengo espacio en la
-			// cola. Si estoy en medio de un HOMING tampoco mando
-			// que estoy listo. Cuando termine ese cilco mandare el
-			// ready y reseteare el gCodeblock.
-			//if(uxQueueSpacesAvailable(xPointsQueue) != 1 &&
 			 //  gcode_block_get_movement() != HOMING) {
 			//	ready_to_process();
 			//}
@@ -199,37 +269,71 @@ void processGcodeLineTask(void *parameters)
 int read_number(char *rxLine, uint8_t *counter, float *number)
 {
 	char *iterator = rxLine + *counter;
-	char *aux;
 	uint8_t i = 0;
 
 	i++;
-	// TODO: Si iterator+i no es un número atof() devuelve 0
-	// No es seguro.. Hay que fijarse si es un numero de otra forma devolver
-	// error
-	/*
-	if(*(iterator+i) < '0' || *(iterator+i) > '9') {
-		//Error nan;
-		return -1;
-	}
-	*/
-	//atof is secure ?
-	// TODO: STRTOF: Cuando le mando 0.1 a 0.9 me lo reconoce como 0 a menos
-	// que el agregegue el signo WTF??
-	if(*(iterator+i) != '0') {
-		*number = strtod(iterator+i, &aux);
-		//*number = atof(iterator+i);
-		if(aux == NULL) {
-			return -1;
-		}
-	}
-	else { *number = 0;  }
-
+	// If iterator+i is letter -> the function returns 0
+	// TODO: Status_t
+	*number = stringToFloat(iterator+i);
 	while(!isLetter(*(iterator+i)) && *(iterator+i) != '\0') { i++;}
-	//update the counter to the next letter
-	//or to the end of the string
 	*counter += i;
 
 	//All good
 	return 0;
 }
+
+float stringToFloat(char *str)
+{
+	uint32_t i = 0;
+	char aux;
+	float result = 0;
+	float base = 0.1;
+	bool_t neg = false;
+
+	aux = str[i];
+
+	// Chequeo de signo
+	if(aux == '-') {
+		neg = true;
+		i++;
+		aux = str[i];
+	}
+	else if(aux == '+') {
+		i++;
+		aux = str[i];
+	}
+	// Parte entera
+	while(aux != '.' && aux != '\0') {
+		if(!isNumber(aux)) {
+			// st = is_letter;
+			//return IS_LETTER;
+			break;
+		}
+		result = result*10 + aux - '0';
+		i++;
+		aux = str[i];
+	}
+	// Parte decimal
+	if(aux == '.') {
+		i++;
+		aux = str[i];
+		while(aux != '\0' && isNumber(aux)) {
+			result = result + base*(float)(aux-'0');
+			base /= 10;
+			i++;
+			aux = str[i];
+		}
+	}
+
+	if(neg == true) {
+		result *= -1;
+	}
+
+	return result;
+}
+
+
+
+
+
 

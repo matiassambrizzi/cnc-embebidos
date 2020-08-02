@@ -20,6 +20,9 @@ typedef enum {
 	INCHES
 } measurement_units_t;
 
-
+typedef enum {
+	RELATIVE,
+	ABSOLUTE
+} coordinates_t;
 
 #endif

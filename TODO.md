@@ -1,16 +1,10 @@
 Cosas para hacer
 ================
 
-1. Ver [este archivo](~/Repositories/Contiki-ng-Attacks/os/dev/serial-line.c) para sacar ideas de un buffer de lineas
-1. Ver la funcion `line` [del archivo](~/Repositories/GcodeCNCDemo/GcodeCNCDemo4AxisCNCShield/GcodeCNCDemo4AxisCNCShield.ino)
-
-
-
-UPDATED TODO
-------------
-
-1. Re diseñar el modulo de código G, para obter datos
-1. Ver como actualizar la acceleracion en motion
-1. Agregar algunos comandos
-
-
+1. Agregar los fines de carrera a la cnc
+1. Mejorar los códigos M
+1. Movimiento circular 
+1. Mejorar la aplicacion web
+1. Hacer un PCB
+1. Comprar hotend
+1. Comprar extrusor

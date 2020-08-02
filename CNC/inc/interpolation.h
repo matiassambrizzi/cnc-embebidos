@@ -1,7 +1,17 @@
 #ifndef _INTERPOLATION__H_
 #define _INTERPOLATION__H_
 
+#include "types.h"
+#ifdef TEST_ALL
+#include <stdint.h>
+#include <stdio.h>
+#include "test_utils.h"
+#endif
+
+#ifndef TEST_ALL
 #include "sapi.h"
+#endif
+
 #include "motors.h"
 #include "position.h"
 #include "config.h"
@@ -63,5 +73,6 @@ void interpolation_set_deltas(int32_t delta_drive,
 			      int32_t delta_second,
 			      int32_t delta_third);
 
+void interpolation_set_coordinate(coordinates_t);
 
 #endif

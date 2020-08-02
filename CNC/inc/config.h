@@ -4,6 +4,8 @@
  * Poner toda las configuraciones del usuario aca
 */
 
+//#define DEBUG
+
 /*
  * Paso por vuelta, esta variable dependerá de cada motor
  * en este caso estoy usando un motor que vanaza 1.8° por
@@ -17,7 +19,16 @@
  * 1mm por vuelta, y como para dar una vuelta tengo que dar
  * 200 pasos -> 200 pasos/mm
 */
-#define STEPS_PER_MM			(200)
+
+/*
+ * La correa GT2 tiene una resolucion de 0.2mm / paso o 5 pasos/mm
+ * Si uso microstepping de 1/4 -> 200 pasos / vuelta -> 800 pasos / vuelta
+ */
+#define STEPS_PER_MM			(5)
+// TODO: Poner microstepping 1/16 para tener mucha mas res
+#define STEPS_PER_MM_X			(20)
+#define STEPS_PER_MM_Y			(20)
+#define STEPS_PER_MM_Z			(640)
 
 /*
  * Configuracion del motor del eje X. Actualizar estos defines
@@ -29,14 +40,14 @@
 /*
  * Configuracion del motor del eje Y
 */
-#define MOTOR_Y_DIR			(GPIO2)
-#define MOTOR_Y_STEP			(GPIO4)
+#define MOTOR_Y_DIR			(GPIO5)
+#define MOTOR_Y_STEP			(GPIO7)
 
 /*
  * Configuracion del motor del eje X
 */
-#define MOTOR_Z_DIR			(GPIO5)
-#define MOTOR_Z_STEP			(GPIO7)
+#define MOTOR_Z_DIR			(GPIO2)
+#define MOTOR_Z_STEP			(GPIO4)
 
 /*
  * Motor gira a la derecha o izquierda. Con esto se pueden cambiar
@@ -51,7 +62,8 @@
  * El Baudrate de la comunicación serie
 */
 #define COM_BAUDRATE			(115200)
-#define UART_PORT			(UART_USB)
+//#define UART_PORT			(UART_USB)
+#define UART_PORT			(UART_232)
 
 
 //TODO: Definir los pines de los endstops
@@ -67,7 +79,7 @@
 /**
 * Maxima cantidad de caracters que se almacenana en el buffer de rx uart
 */
-#define MAX_RX_BUFFER			(15)
+#define MAX_RX_BUFFER			(80)
 
 #define	READY_TO_PROCESS_CHAR		('$')
 
@@ -75,10 +87,10 @@
 
 // maxima Velocidad medida en pasos por segundo
 // 300 Steps/second -> Se taduce en un delay de aproximadamente 3ms
-#define MAX_VEL_STEPS_PER_SECOND	(400)
+#define MAX_VEL_STEPS_PER_SECOND	(1000)
 //Minima velocidad distinta de cero para evitar una division por cero
 //en el algoritmo de aceleración
 #define MIN_VEL_STEPS_PER_SECOND	(1)
 
-#define MAX_ACCEL_STEPS_PER_SECOND_SQUARE (200)
+#define MAX_ACCEL_STEPS_PER_SECOND_SQUARE (1000)
 #endif

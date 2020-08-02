@@ -9,11 +9,38 @@ extern SemaphoreHandle_t xSemaphore;
 static bool_t isNumber(const uint8_t c);
 static bool_t isLetter(const uint8_t c);
 static bool_t isValidLetter(const char c);
+static void print_position();
 
 /*
  * Implementación de funciones privadas
  * ====================================
  */
+
+static void print_position()
+{
+	char aux_xpos[10];
+	char aux_ypos[10];
+	char aux_zpos[10];
+
+	float xpos = (float) position_get_x() / STEPS_PER_MM_X;
+	float ypos = (float) position_get_y() / STEPS_PER_MM_Y;
+	float zpos = (float) position_get_z() / STEPS_PER_MM_Z;
+
+	floatToString(xpos, aux_xpos, 2);
+	floatToString(ypos, aux_ypos, 2);
+	floatToString(zpos, aux_zpos, 2);
+
+	uartWriteString(UART_PORT, "X: ");
+	uartWriteString(UART_PORT, aux_xpos);
+	uartWriteString(UART_PORT, ", ");
+	uartWriteString(UART_PORT, "Y: ");
+	uartWriteString(UART_PORT, aux_ypos);
+	uartWriteString(UART_PORT, ", ");
+	uartWriteString(UART_PORT, "Z: ");
+	uartWriteString(UART_PORT, aux_zpos);
+	uartWriteString(UART_PORT, "\n\r");
+}
+
 static bool_t isLetter(const uint8_t c)
 {
 	return (c >= 'A' && c <= 'Z');
@@ -48,6 +75,7 @@ void processGcodeLineTask(void *parameters)
 	float number=0;
 	uint8_t int_val = 0;
 	bool_t movment = false;
+	char aux_pos[20];
 
 	while(1) {
 
@@ -102,6 +130,7 @@ void processGcodeLineTask(void *parameters)
 						//Fast Move
 #ifdef DEBUG
 						vPrintString("Movimiento Rapido\r\n");
+						uartWriteString(UART_PORT, "Movimiento Rapido\r\n");
 #endif
 						gcode_block_set_movment(FAST_MOVMENT);
 						break;
@@ -109,6 +138,7 @@ void processGcodeLineTask(void *parameters)
 						//line move
 #ifdef DEBUG
 						vPrintString("Movimiento Lineal\r\n");
+						uartWriteString(UART_PORT, "Movimiento Linea\r\n");
 #endif
 						gcode_block_set_movment(LINE);
 						break;
@@ -175,10 +205,11 @@ void processGcodeLineTask(void *parameters)
 				case 'M':
 					switch (int_val) {
 					case 2:
-						vPrintString("Seting pause\r\n");
+						uartWriteString(UART_PORT, "Pausa\n\r");
 						gcode_set_pause(true);
 						break;
 					case 3:
+						uartWriteString(UART_PORT, "Continuar\n\r");
 						gcode_set_pause(false);
 						break;
 					default:
@@ -191,6 +222,7 @@ void processGcodeLineTask(void *parameters)
 					case 'a':
 #ifdef DEBUG
 						printf("Numero %d\r\n", (int32_t) number);
+						uartWriteString(UART_PORT, "Seteo aceleración\n\r");
 #endif
 						motion_set_accel(number);
 						break;
@@ -201,9 +233,7 @@ void processGcodeLineTask(void *parameters)
 						}
 						break;
 					case '$':
-						printf("X: %d, ", position_get_x() / STEPS_PER_MM_X);
-						printf("Y: %d, ", position_get_y() / STEPS_PER_MM_Y);
-						printf("Z: %d\r\n", position_get_z() / STEPS_PER_MM_Z);
+						print_position();
 						break;
 					default:
 						;
@@ -301,3 +331,9 @@ float stringToFloat(char *str)
 
 	return result;
 }
+
+
+
+
+
+

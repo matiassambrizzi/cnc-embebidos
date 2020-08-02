@@ -4,7 +4,7 @@
  * Poner toda las configuraciones del usuario aca
 */
 
-#define DEBUG
+//#define DEBUG
 
 /*
  * Paso por vuelta, esta variable dependerá de cada motor

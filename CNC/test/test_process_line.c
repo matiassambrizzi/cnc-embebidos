@@ -111,6 +111,15 @@ void test_my_string_to_float(void)
 
 
 
+void test_floatToString()
+{
+	char aux[20];
+	float f = 1.0;
+
+	floatToString(f, aux);
+	TEST_ASSERT_EQUAL("1.0", aux);
+
+}
 
 
 

@@ -184,7 +184,6 @@ void moveMotorsTask(void *param)
 
 		motion_config.vel_max = gblock.velocity;
 		motion_config.coords = gblock.cord;
-		// TODO: actualizar la aceleración aca!
 
 		// Seteo movimiento relativo o absoluto
 		interpolation_set_coordinate(gblock.cord);
@@ -276,8 +275,6 @@ void line_move(float newx, float newy, float newz)
 	pos = init_pos;
 	while(pos != max_new_steps) {
 		// STEP 1: Correr un ciclo de interpolacion y mover los motores
-		// Puedo hacer la pausa aca porque
-		// todas las cuentas las hago en un módulo separado
 		if(gcode_get_pause() != true) {
 			interpolation_run_cycle();
 		// STEP 2: Calcular la velocidad teniendo en cuenta la aceleración
